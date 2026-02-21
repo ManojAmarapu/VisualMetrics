@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>VisualMetrics</title>
 
-<link rel="icon" href="/favicon.ico?v=30">
+<link rel="icon" href="/favicon.ico?v=50">
 <link rel="manifest" href="site.webmanifest" />
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -16,37 +16,46 @@
 
 <body>
 
+<div class="page-wrapper">
+
 <h1>VisualMetrics</h1>
 <p class="subtitle">Interactive Data Visualization Tool</p>
 
-<div class="container">
-  <label>Chart Title</label>
-  <input type="text" id="title" placeholder="Monthly Sales">
+<div class="glass-card">
 
-  <label>Chart Type</label>
-  <select id="type">
-    <option value="bar">Bar</option>
-    <option value="line">Line</option>
-    <option value="pie">Pie</option>
-    <option value="doughnut">Doughnut</option>
-    <option value="radar">Radar</option>
-    <option value="polarArea">Polar Area</option>
-  </select>
+<label>Chart Title</label>
+<input type="text" id="title" placeholder="Monthly Sales">
 
-  <label>Labels (comma separated)</label>
-  <input type="text" id="labels" placeholder="Jan, Feb, Mar">
+<label>Chart Type</label>
+<select id="type">
+<option value="bar">Bar</option>
+<option value="line">Line</option>
+<option value="pie">Pie</option>
+<option value="doughnut">Doughnut</option>
+<option value="radar">Radar</option>
+<option value="polarArea">Polar Area</option>
+</select>
 
-  <label>Data (comma separated numbers)</label>
-  <input type="text" id="data" placeholder="10, 20, 30">
-</div>
+<label>Chart Color</label>
+<input type="color" id="colorPicker" value="#ff6b35">
+
+<label>Labels (comma separated)</label>
+<input type="text" id="labels" placeholder="Jan, Feb, Mar">
+
+<label>Data (comma separated numbers)</label>
+<input type="text" id="data" placeholder="10, 20, 30">
 
 <div class="buttons">
-  <button onclick="generateChart()">Generate Chart</button>
-  <button onclick="downloadChart()">Download Chart</button>
+<button onclick="generateChart()">Generate Chart</button>
+<button onclick="downloadChart()">Download Chart</button>
 </div>
 
-<div id="chart-container">
-  <canvas id="chartCanvas"></canvas>
+<div class="chart-wrapper">
+<canvas id="chartCanvas"></canvas>
+</div>
+
+</div>
+
 </div>
 
 <script src="script.js"></script>

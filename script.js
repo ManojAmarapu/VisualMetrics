@@ -1,78 +1,79 @@
 let currentChart = null;
 
 function generateChart() {
-  const title = document.getElementById('title').value.trim() || 'Untitled Chart';
-  const type = document.getElementById('type').value;
-  const labels = document.getElementById('labels').value.split(',').map(l => l.trim());
-  const data = document.getElementById('data').value.split(',').map(n => Number(n.trim()));
 
-  if (labels.length !== data.length || data.some(isNaN)) {
-    alert('Labels and data must match and contain only numbers.');
-    return;
-  }
+const title = document.getElementById('title').value || "Untitled Chart";
+const type = document.getElementById('type').value;
+const labels = document.getElementById('labels').value.split(',').map(l => l.trim());
+const data = document.getElementById('data').value.split(',').map(n => Number(n.trim()));
+const color = document.getElementById('colorPicker').value;
 
-  const canvas = document.getElementById('chartCanvas');
-  const ctx = canvas.getContext('2d');
+if (labels.length !== data.length || data.some(isNaN)) {
+alert("Labels & data must match and contain valid numbers.");
+return;
+}
 
-  if (currentChart) currentChart.destroy();
+const ctx = document.getElementById('chartCanvas').getContext('2d');
 
-  currentChart = new Chart(ctx, {
-    type: type,
-    data: {
-      labels: labels,
-      datasets: [{
-        label: title,
-        data: data,
-        backgroundColor: '#FF7A45',
-        borderColor: '#FF5A1F',
-        borderWidth: 2,
-        hoverBackgroundColor: '#FFA07A'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 900,
-        easing: 'easeOutQuart'
-      },
-      plugins: {
-        title: {
-          display: true,
-          text: title,
-          color: '#FFFFFF',
-          font: { size: 20, weight: '600' }
-        },
-        legend: {
-          labels: { color: '#F0F0F0' }
-        }
-      },
-      scales: ['bar', 'line'].includes(type) ? {
-        x: {
-          ticks: { color: '#EAEAEA' },
-          grid: { color: 'rgba(255,255,255,0.12)' }
-        },
-        y: {
-          ticks: { color: '#EAEAEA' },
-          grid: { color: 'rgba(255,255,255,0.12)' }
-        }
-      } : {}
-    }
-  });
+if (currentChart) currentChart.destroy();
+
+currentChart = new Chart(ctx, {
+type: type,
+data: {
+labels: labels,
+datasets: [{
+label: title,
+data: data,
+backgroundColor: color,
+borderColor: color,
+borderWidth: 2
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+animation: {
+duration: 800
+},
+plugins: {
+legend: {
+labels: { color: "#ffffff" }
+},
+title: {
+display: true,
+text: title,
+color: "#ffffff",
+font: { size: 18 }
+}
+},
+scales: ['bar','line'].includes(type) ? {
+x: {
+ticks: { color: "#ffffff" },
+grid: { color: "rgba(255,255,255,0.1)" }
+},
+y: {
+ticks: { color: "#ffffff" },
+grid: { color: "rgba(255,255,255,0.1)" }
+}
+} : {}
+}
+});
 }
 
 function downloadChart() {
-  const canvas = document.getElementById('chartCanvas');
-  const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('chartCanvas');
+const tempCanvas = document.createElement('canvas');
+const ctx = tempCanvas.getContext('2d');
 
-  ctx.save();
-  ctx.globalCompositeOperation = 'destination-over';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.restore();
+tempCanvas.width = canvas.width;
+tempCanvas.height = canvas.height;
 
-  const link = document.createElement('a');
-  link.download = 'chart.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+ctx.drawImage(canvas, 0, 0);
+
+const link = document.createElement('a');
+link.download = "chart.png";
+link.href = tempCanvas.toDataURL("image/png");
+link.click();
 }
