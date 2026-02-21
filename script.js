@@ -1,3 +1,4 @@
+Chart.register(ChartDataLabels);
 const ctx = document.getElementById("myChart").getContext("2d");
 let chartInstance;
 let selectedColor = "rgb(22,126,75)";
@@ -161,81 +162,71 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
 if (!chartInstance) return;
 
-const sourceCanvas = chartInstance.canvas;
-const width = sourceCanvas.width;
-const height = sourceCanvas.height;
+const originalConfig = chartInstance.config;
+const width = chartInstance.canvas.width;
+const height = chartInstance.canvas.height;
 
+/* Create clean export canvas */
 const exportCanvas = document.createElement("canvas");
 exportCanvas.width = width;
 exportCanvas.height = height;
-const ctx = exportCanvas.getContext("2d");
+const exportCtx = exportCanvas.getContext("2d");
 
 /* White background */
-ctx.fillStyle = "#ffffff";
-ctx.fillRect(0, 0, width, height);
+exportCtx.fillStyle = "#ffffff";
+exportCtx.fillRect(0, 0, width, height);
 
-/* Draw existing chart exactly as-is */
-ctx.drawImage(sourceCanvas, 0, 0);
+/* Deep clone config safely */
+const exportConfig = structuredClone(originalConfig);
 
-/* Prepare text style */
-ctx.fillStyle = "#000000";
-ctx.font = "bold 14px Poppins";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
+/* Force black legend */
+exportConfig.options.plugins.legend.labels.color = "#000000";
 
-const meta = chartInstance.getDatasetMeta(0);
-const data = chartInstance.data.datasets[0].data;
-const type = chartInstance.config.type;
-
-/* BAR */
-if (type === "bar") {
-meta.data.forEach((bar, i) => {
-const x = bar.x;
-const y = bar.y - 12;
-ctx.fillText(data[i], x, y);
+/* Force black scales */
+if (exportConfig.options.scales) {
+Object.values(exportConfig.options.scales).forEach(scale => {
+if (scale.ticks) scale.ticks.color = "#000000";
 });
 }
 
-/* LINE */
-if (type === "line") {
-meta.data.forEach((point, i) => {
-ctx.fillText(data[i], point.x, point.y - 15);
-});
-}
+/* Enable datalabels correctly per chart */
+exportConfig.options.plugins.datalabels = {
+color: "#000000",
+font: {
+weight: "bold",
+size: 14
+},
+formatter: function(value) {
+return value;
+},
+anchor: function(context) {
+const type = context.chart.config.type;
+if (type === "bar") return "end";
+if (type === "line") return "end";
+return "center";
+},
+align: function(context) {
+const type = context.chart.config.type;
+if (type === "bar") return "end";
+if (type === "line") return "top";
+return "center";
+},
+clamp: true
+};
 
-/* PIE + DOUGHNUT */
-if (type === "pie" || type === "doughnut") {
-meta.data.forEach((arc, i) => {
-const angle = (arc.startAngle + arc.endAngle) / 2;
-const radius = (arc.innerRadius + arc.outerRadius) / 2;
-const x = arc.x + Math.cos(angle) * radius;
-const y = arc.y + Math.sin(angle) * radius;
-ctx.fillText(data[i], x, y);
-});
-}
+/* Render export chart */
+const exportChart = new Chart(exportCtx, exportConfig);
 
-/* POLAR AREA */
-if (type === "polarArea") {
-meta.data.forEach((arc, i) => {
-const angle = (arc.startAngle + arc.endAngle) / 2;
-const radius = arc.outerRadius / 2;
-const x = arc.x + Math.cos(angle) * radius;
-const y = arc.y + Math.sin(angle) * radius;
-ctx.fillText(data[i], x, y);
-});
-}
+/* Wait for render */
+setTimeout(() => {
 
-/* RADAR */
-if (type === "radar") {
-meta.data.forEach((point, i) => {
-ctx.fillText(data[i], point.x, point.y - 10);
-});
-}
-
-/* Download */
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = exportCanvas.toDataURL("image/png");
 link.click();
+
+exportChart.destroy();
+
+}, 300);
 
 });
