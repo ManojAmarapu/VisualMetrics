@@ -165,7 +165,7 @@ const originalCanvas = chartInstance.canvas;
 const width = originalCanvas.width;
 const height = originalCanvas.height;
 
-/* ================= STORE ORIGINAL COLORS ================= */
+/* ========= STORE ORIGINAL COLORS ========= */
 
 const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
 
@@ -180,7 +180,7 @@ originalYTickColor = chartInstance.options.scales.y.ticks.color;
 if (chartInstance.options.scales?.r?.ticks)
 originalRTickColor = chartInstance.options.scales.r.ticks.color;
 
-/* Switch export text to black */
+/* Switch to black for export */
 chartInstance.options.plugins.legend.labels.color = "#000000";
 
 if (chartInstance.options.scales?.x?.ticks)
@@ -194,7 +194,7 @@ chartInstance.options.scales.r.ticks.color = "#000000";
 
 chartInstance.update("none");
 
-/* ================= CREATE WHITE EXPORT ================= */
+/* ========= CREATE WHITE CANVAS ========= */
 
 const tempCanvas = document.createElement("canvas");
 tempCanvas.width = width;
@@ -205,7 +205,7 @@ tempCtx.fillStyle = "#ffffff";
 tempCtx.fillRect(0, 0, width, height);
 tempCtx.drawImage(originalCanvas, 0, 0);
 
-/* ================= DRAW VALUES CLEANLY ================= */
+/* ========= DRAW VALUES USING TRUE CENTER ========= */
 
 const type = chartInstance.config.type;
 const dataset = chartInstance.data.datasets[0];
@@ -216,72 +216,50 @@ tempCtx.font = "bold 15px Poppins";
 tempCtx.textAlign = "center";
 tempCtx.textBaseline = "middle";
 
-/* PIE + DOUGHNUT + POLAR AREA */
+/* Pie, Doughnut, Polar Area */
 if (["pie","doughnut","polarArea"].includes(type)) {
 
-meta.data.forEach((arc, index) => {
+meta.data.forEach((element, index) => {
 
 const value = dataset.data[index];
+const center = element.getCenterPoint();
 
-const centerX = arc.x;
-const centerY = arc.y;
-
-const startAngle = arc.startAngle;
-const endAngle = arc.endAngle;
-const midAngle = (startAngle + endAngle) / 2;
-
-let radius;
-
-/* Doughnut */
-if (type === "doughnut") {
-radius = arc.innerRadius + (arc.outerRadius - arc.innerRadius) / 2;
-}
-
-/* Pie */
-else if (type === "pie") {
-radius = arc.outerRadius * 0.55;
-}
-
-/* Polar Area */
-else {
-radius = arc.outerRadius * 0.6;
-}
-
-const x = centerX + Math.cos(midAngle) * radius;
-const y = centerY + Math.sin(midAngle) * radius;
-
-tempCtx.fillText(value, x, y);
+tempCtx.fillText(value, center.x, center.y);
 
 });
+
 }
 
-/* RADAR */
+/* Radar */
 if (type === "radar") {
 
 meta.data.forEach((point, index) => {
 
 const value = dataset.data[index];
 
-/* Slight outward offset from point */
-const dx = point.x - meta.data[0].x;
-const dy = point.y - meta.data[0].y;
+/* Slight outward offset */
+const angle = Math.atan2(
+point.y - meta.data[0].y,
+point.x - meta.data[0].x
+);
 
-const offsetX = point.x + dx * 0.1;
-const offsetY = point.y + dy * 0.1;
+const offsetX = point.x + Math.cos(angle) * 12;
+const offsetY = point.y + Math.sin(angle) * 12;
 
 tempCtx.fillText(value, offsetX, offsetY);
 
 });
+
 }
 
-/* ================= DOWNLOAD ================= */
+/* ========= DOWNLOAD ========= */
 
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
 
-/* ================= RESTORE ORIGINAL ================= */
+/* ========= RESTORE ORIGINAL ========= */
 
 chartInstance.options.plugins.legend.labels.color = originalLegendColor;
 
