@@ -70,7 +70,13 @@ shadePopup.style.display = "none";
 
 [rInput, gInput, bInput].forEach(input => {
 input.addEventListener("input", () => {
-updateColor(rInput.value, gInput.value, bInput.value);
+
+let r = Math.min(255, Math.max(0, parseInt(rInput.value) || 0));
+let g = Math.min(255, Math.max(0, parseInt(gInput.value) || 0));
+let b = Math.min(255, Math.max(0, parseInt(bInput.value) || 0));
+
+updateColor(r, g, b);
+
 });
 });
 
