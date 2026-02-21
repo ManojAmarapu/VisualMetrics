@@ -161,28 +161,56 @@ document.getElementById("downloadBtn").addEventListener("click", function(){
 
 if (!chartInstance) return;
 
+/* -------- STORE ORIGINAL COLORS -------- */
+const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
+const originalXAxisColor = chartInstance.options.scales?.x?.ticks?.color;
+const originalYAxisColor = chartInstance.options.scales?.y?.ticks?.color;
+
+/* -------- CHANGE TO BLACK FOR EXPORT -------- */
+chartInstance.options.plugins.legend.labels.color = "#000000";
+
+if (chartInstance.options.scales?.x?.ticks)
+chartInstance.options.scales.x.ticks.color = "#000000";
+
+if (chartInstance.options.scales?.y?.ticks)
+chartInstance.options.scales.y.ticks.color = "#000000";
+
+/* -------- UPDATE CHART WITH BLACK TEXT -------- */
+chartInstance.update();
+
+/* -------- CREATE WHITE BACKGROUND EXPORT -------- */
 const originalCanvas = chartInstance.canvas;
 const width = originalCanvas.width;
 const height = originalCanvas.height;
 
-// Create temporary canvas
 const tempCanvas = document.createElement("canvas");
 tempCanvas.width = width;
 tempCanvas.height = height;
 
 const tempCtx = tempCanvas.getContext("2d");
 
-// Fill white background
+// White background
 tempCtx.fillStyle = "#ffffff";
 tempCtx.fillRect(0, 0, width, height);
 
-// Draw original chart on top
+// Draw updated chart
 tempCtx.drawImage(originalCanvas, 0, 0);
 
-// Download image
+// Download
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
+
+/* -------- RESTORE ORIGINAL WHITE TEXT -------- */
+chartInstance.options.plugins.legend.labels.color = originalLegendColor;
+
+if (chartInstance.options.scales?.x?.ticks)
+chartInstance.options.scales.x.ticks.color = originalXAxisColor;
+
+if (chartInstance.options.scales?.y?.ticks)
+chartInstance.options.scales.y.ticks.color = originalYAxisColor;
+
+chartInstance.update();
 
 });
