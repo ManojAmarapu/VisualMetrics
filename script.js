@@ -161,66 +161,79 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
 if (!chartInstance) return;
 
-const originalConfig = chartInstance.config;
-const width = chartInstance.canvas.width;
-const height = chartInstance.canvas.height;
+const canvas = chartInstance.canvas;
+const width = canvas.width;
+const height = canvas.height;
 
-/* Create temporary canvas */
+/* Create white background canvas */
 const tempCanvas = document.createElement("canvas");
 tempCanvas.width = width;
 tempCanvas.height = height;
-const tempCtx = tempCanvas.getContext("2d");
+const ctx = tempCanvas.getContext("2d");
 
 /* White background */
-tempCtx.fillStyle = "#ffffff";
-tempCtx.fillRect(0, 0, width, height);
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0, 0, width, height);
 
-/* Clone config deeply */
-const exportConfig = JSON.parse(JSON.stringify(originalConfig));
+/* Draw original chart */
+ctx.drawImage(canvas, 0, 0);
 
-/* Force black text */
-if (!exportConfig.options.plugins) exportConfig.options.plugins = {};
-if (!exportConfig.options.plugins.legend) exportConfig.options.plugins.legend = {};
-if (!exportConfig.options.plugins.legend.labels)
-exportConfig.options.plugins.legend.labels = {};
+/* Draw values manually */
+ctx.fillStyle = "#000000";
+ctx.font = "bold 14px Poppins";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
 
-exportConfig.options.plugins.legend.labels.color = "#000000";
+const meta = chartInstance.getDatasetMeta(0);
+const dataset = chartInstance.data.datasets[0];
+const type = chartInstance.config.type;
 
-/* Force scale ticks black */
-if (exportConfig.options.scales) {
-Object.values(exportConfig.options.scales).forEach(scale => {
-if (scale.ticks) scale.ticks.color = "#000000";
+/* BAR + LINE */
+if (type === "bar" || type === "line") {
+
+meta.data.forEach((element, index) => {
+
+const value = dataset.data[index];
+const position = element.tooltipPosition();
+
+ctx.fillText(value, position.x, position.y - 12);
+
 });
+
 }
 
-/* Enable data labels for ALL charts */
-exportConfig.options.plugins.datalabels = {
-color: "#000000",
-font: {
-weight: "bold",
-size: 14
-},
-anchor: "center",
-align: "center",
-formatter: function(value) {
-return value;
+/* PIE + DOUGHNUT + POLAR */
+if (["pie","doughnut","polarArea"].includes(type)) {
+
+meta.data.forEach((element, index) => {
+
+const value = dataset.data[index];
+const center = element.tooltipPosition();
+
+ctx.fillText(value, center.x, center.y);
+
+});
+
 }
-};
 
-/* Create hidden chart */
-const exportChart = new Chart(tempCtx, exportConfig);
+/* RADAR */
+if (type === "radar") {
 
-/* Small delay ensures render complete */
-setTimeout(() => {
+meta.data.forEach((point, index) => {
 
+const value = dataset.data[index];
+const position = point.tooltipPosition();
+
+ctx.fillText(value, position.x, position.y - 10);
+
+});
+
+}
+
+/* Download */
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
-
-/* Destroy hidden chart */
-exportChart.destroy();
-
-}, 300);
 
 });
