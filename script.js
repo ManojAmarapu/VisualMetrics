@@ -169,35 +169,23 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    const originalCanvas = chartInstance.canvas;
-    const width = originalCanvas.width;
-    const height = originalCanvas.height;
+    // Save original options
+    const originalLegendColor =
+        chartInstance.options.plugins.legend.labels.color;
 
-    // Create separate export canvas
-    const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = width;
-    exportCanvas.height = height;
-    const ctx = exportCanvas.getContext("2d");
+    const originalDataLabels =
+        chartInstance.options.plugins.datalabels;
 
-    // White background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width, height);
+    // Change for export
+    chartInstance.options.plugins.legend.labels.color = "#000000";
 
-    // Clone chart config safely
-    const exportConfig = structuredClone(chartInstance.config);
-
-    // Force black legend
-    exportConfig.options.plugins.legend.labels.color = "#000000";
-
-    // Force black scale ticks
-    if (exportConfig.options.scales) {
-        Object.values(exportConfig.options.scales).forEach(scale => {
+    if (chartInstance.options.scales) {
+        Object.values(chartInstance.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    // Enable datalabels ONLY for export
-    exportConfig.options.plugins.datalabels = {
+    chartInstance.options.plugins.datalabels = {
         display: true,
         color: "#000000",
         font: {
@@ -222,17 +210,21 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         clamp: true
     };
 
-    // Render export-only chart
-    const exportChart = new Chart(ctx, exportConfig);
+    // Update chart with export settings
+    chartInstance.update();
 
-    // Wait for rendering
     setTimeout(() => {
+
         const link = document.createElement("a");
         link.download = "chart.png";
-        link.href = exportCanvas.toDataURL("image/png");
+        link.href = chartInstance.toBase64Image("image/png", 1);
         link.click();
 
-        exportChart.destroy();
-    }, 300);
+        // Restore original settings
+        chartInstance.options.plugins.legend.labels.color = originalLegendColor;
+        chartInstance.options.plugins.datalabels = originalDataLabels;
 
+        chartInstance.update();
+
+    }, 300);
 });
