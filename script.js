@@ -1,74 +1,78 @@
 let currentChart = null;
 
 function generateChart() {
-  const title = document.getElementById('title').value || "Untitled Chart";
+  const title = document.getElementById('title').value.trim() || 'Untitled Chart';
   const type = document.getElementById('type').value;
   const labels = document.getElementById('labels').value.split(',').map(l => l.trim());
   const data = document.getElementById('data').value.split(',').map(n => Number(n.trim()));
 
   if (labels.length !== data.length || data.some(isNaN)) {
-    alert("Labels and data must match and be valid numbers.");
+    alert('Labels and data must match and contain only numbers.');
     return;
   }
 
+  const canvas = document.getElementById('chartCanvas');
+  const ctx = canvas.getContext('2d');
+
   if (currentChart) currentChart.destroy();
 
-  currentChart = new Chart(document.getElementById('chartCanvas'), {
+  currentChart = new Chart(ctx, {
     type: type,
     data: {
       labels: labels,
       datasets: [{
         label: title,
         data: data,
-        backgroundColor: '#00c6ff',
-        borderColor: '#2563EB',
+        backgroundColor: '#FF7A45',
+        borderColor: '#FF5A1F',
         borderWidth: 2,
-        barThickness: 40
+        hoverBackgroundColor: '#FFA07A'
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: {
+        duration: 900,
+        easing: 'easeOutQuart'
+      },
       plugins: {
         title: {
           display: true,
           text: title,
-          color: '#ffffff',
-          font: { size: 20, weight: 'bold' }
+          color: '#FFFFFF',
+          font: { size: 20, weight: '600' }
         },
         legend: {
-          labels: { color: '#ffffff' }
+          labels: { color: '#F0F0F0' }
         }
       },
-      scales: ['bar','line'].includes(type) ? {
-        x: { ticks: { color: '#ffffff' } },
-        y: { ticks: { color: '#ffffff' } }
+      scales: ['bar', 'line'].includes(type) ? {
+        x: {
+          ticks: { color: '#EAEAEA' },
+          grid: { color: 'rgba(255,255,255,0.12)' }
+        },
+        y: {
+          ticks: { color: '#EAEAEA' },
+          grid: { color: 'rgba(255,255,255,0.12)' }
+        }
       } : {}
     }
   });
 }
 
 function downloadChart() {
-  if (!currentChart) {
-    alert("Generate chart first.");
-    return;
-  }
-
   const canvas = document.getElementById('chartCanvas');
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = canvas.width;
-  tempCanvas.height = canvas.height;
+  const ctx = canvas.getContext('2d');
 
-  const ctx = tempCanvas.getContext('2d');
-
-  /* WHITE BACKGROUND FOR DOWNLOAD */
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-  ctx.drawImage(canvas, 0, 0);
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
 
   const link = document.createElement('a');
-  link.download = "visualmetrics-chart.png";
-  link.href = tempCanvas.toDataURL();
+  link.download = 'chart.png';
+  link.href = canvas.toDataURL('image/png');
   link.click();
 }

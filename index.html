@@ -20,33 +20,33 @@
 <p class="subtitle">Interactive Data Visualization Tool</p>
 
 <div class="container">
-<label>Chart Title:</label>
-<input type="text" id="title" placeholder="Monthly Sales">
+  <label>Chart Title</label>
+  <input type="text" id="title" placeholder="Monthly Sales">
 
-<label>Chart Type:</label>
-<select id="type">
-<option value="bar">Bar</option>
-<option value="line">Line</option>
-<option value="pie">Pie</option>
-<option value="doughnut">Doughnut</option>
-<option value="radar">Radar</option>
-<option value="polarArea">Polar Area</option>
-</select>
+  <label>Chart Type</label>
+  <select id="type">
+    <option value="bar">Bar</option>
+    <option value="line">Line</option>
+    <option value="pie">Pie</option>
+    <option value="doughnut">Doughnut</option>
+    <option value="radar">Radar</option>
+    <option value="polarArea">Polar Area</option>
+  </select>
 
-<label>Labels (comma separated):</label>
-<input type="text" id="labels" placeholder="Jan, Feb, Mar">
+  <label>Labels (comma separated)</label>
+  <input type="text" id="labels" placeholder="Jan, Feb, Mar">
 
-<label>Data (comma separated numbers):</label>
-<input type="text" id="data" placeholder="10, 20, 30">
+  <label>Data (comma separated numbers)</label>
+  <input type="text" id="data" placeholder="10, 20, 30">
 </div>
 
 <div class="buttons">
-<button onclick="generateChart()">Generate Chart</button>
-<button onclick="downloadChart()">Download Chart</button>
+  <button onclick="generateChart()">Generate Chart</button>
+  <button onclick="downloadChart()">Download Chart</button>
 </div>
 
 <div id="chart-container">
-<canvas id="chartCanvas"></canvas>
+  <canvas id="chartCanvas"></canvas>
 </div>
 
 <script src="script.js"></script>
