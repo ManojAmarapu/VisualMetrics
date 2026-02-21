@@ -1,25 +1,20 @@
 const ctx = document.getElementById("myChart").getContext("2d");
 let chartInstance;
-
 let selectedColor = "rgb(22,126,75)";
 
-/* ===== COLOR PICKER ===== */
-
+/* Color Picker */
 const spectrum = document.getElementById("colorSpectrum");
-const popup = document.getElementById("shadePopup");
-
 const rInput = document.getElementById("rValue");
 const gInput = document.getElementById("gValue");
 const bInput = document.getElementById("bValue");
 
-function updateSelectedColor(r, g, b) {
+function updateColor(r, g, b) {
 selectedColor = `rgb(${r},${g},${b})`;
 rInput.value = r;
 gInput.value = g;
 bInput.value = b;
 }
 
-/* click on spectrum */
 spectrum.addEventListener("click", function(e) {
 const rect = spectrum.getBoundingClientRect();
 const x = e.clientX - rect.left;
@@ -30,25 +25,20 @@ const color = `hsl(${hue}, 100%, 50%)`;
 const temp = document.createElement("div");
 temp.style.color = color;
 document.body.appendChild(temp);
-
-const rgb = window.getComputedStyle(temp).color;
+const rgb = getComputedStyle(temp).color;
 document.body.removeChild(temp);
 
 const values = rgb.match(/\d+/g);
-updateSelectedColor(values[0], values[1], values[2]);
-
-popup.style.display = "block";
+updateColor(values[0], values[1], values[2]);
 });
 
-/* RGB manual input */
 [rInput, gInput, bInput].forEach(input => {
 input.addEventListener("input", () => {
-updateSelectedColor(rInput.value, gInput.value, bInput.value);
+updateColor(rInput.value, gInput.value, bInput.value);
 });
 });
 
-/* ===== SHADE GENERATOR ===== */
-
+/* Shade generator */
 function generateShades(baseColor, count) {
 const rgb = baseColor.match(/\d+/g).map(Number);
 const shades = [];
@@ -63,9 +53,8 @@ shades.push(`rgb(${r},${g},${b})`);
 return shades;
 }
 
-/* ===== GENERATE CHART ===== */
-
-function generateChart() {
+/* Generate Chart */
+document.getElementById("generateBtn").addEventListener("click", function() {
 
 const title = document.getElementById("chartTitle").value;
 const type = document.getElementById("chartType").value;
@@ -74,29 +63,27 @@ const data = document.getElementById("data").value.split(",").map(Number);
 
 if (chartInstance) chartInstance.destroy();
 
-let backgroundColors;
+let bg;
 let borderColor;
 let borderWidth;
 
-/* logic */
-
 if (type === "bar") {
-backgroundColors = selectedColor;
+bg = selectedColor;
 borderColor = "#ffffff";
 borderWidth = 2;
 }
 else if (type === "line") {
-backgroundColors = selectedColor;
+bg = selectedColor;
 borderColor = selectedColor;
 borderWidth = 3;
 }
 else if (["pie","doughnut","polarArea"].includes(type)) {
-backgroundColors = generateShades(selectedColor, labels.length);
+bg = generateShades(selectedColor, labels.length);
 borderColor = "#ffffff";
 borderWidth = 2;
 }
 else if (type === "radar") {
-backgroundColors = selectedColor.replace("rgb", "rgba").replace(")", ",0.4)");
+bg = selectedColor.replace("rgb","rgba").replace(")",",0.4)");
 borderColor = selectedColor;
 borderWidth = 2;
 }
@@ -108,7 +95,7 @@ labels: labels,
 datasets: [{
 label: title,
 data: data,
-backgroundColor: backgroundColors,
+backgroundColor: bg,
 borderColor: borderColor,
 borderWidth: borderWidth,
 fill: type === "line" ? false : true
@@ -117,17 +104,8 @@ fill: type === "line" ? false : true
 options: {
 responsive: true,
 plugins: {
-legend: {
-labels: { color: "white" }
-}
-},
-scales: type === "radar" ? {} : {
-x: { ticks: { color: "white" } },
-y: { ticks: { color: "white" } }
+legend: { labels: { color: "white" } }
 }
 }
 });
-}
-
-/* button binding */
-document.getElementById("generateBtn").addEventListener("click", generateChart);
+});

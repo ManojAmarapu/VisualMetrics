@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>VisualMetrics</title>
 
-<link rel="icon" href="/favicon.ico?v=300">
+<link rel="icon" href="/favicon.ico?v=30">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -17,11 +18,11 @@
 <p class="subtitle">Interactive Data Visualization Tool</p>
 
 <div class="input-card">
-<label>Chart Title</label>
-<input type="text" id="title" placeholder="Monthly Sales">
+<label>Chart Title:</label>
+<input type="text" id="chartTitle" placeholder="Monthly Sales">
 
-<label>Chart Type</label>
-<select id="type">
+<label>Chart Type:</label>
+<select id="chartType">
 <option value="bar">Bar</option>
 <option value="line">Line</option>
 <option value="pie">Pie</option>
@@ -30,37 +31,33 @@
 <option value="polarArea">Polar Area</option>
 </select>
 
-<label>Labels (comma separated)</label>
+<label>Labels (comma separated):</label>
 <input type="text" id="labels" placeholder="Jan, Feb, Mar">
 
-<label>Data (comma separated numbers)</label>
+<label>Data (comma separated numbers):</label>
 <input type="text" id="data" placeholder="10, 20, 30">
 </div>
 
 <div class="button-row">
-<button onclick="generateChart()">Generate Chart</button>
-<button onclick="downloadChart()">Download Chart</button>
+<button id="generateBtn">Generate Chart</button>
+<button id="downloadBtn">Download Chart</button>
 </div>
 
-<!-- COLOR PICKER CARD -->
 <div class="color-card">
-<div class="color-header">Select Chart Color</div>
-
-<div class="spectrum" id="spectrum"></div>
+<div class="color-header">Select Chart Color:</div>
+<div id="colorSpectrum" class="spectrum"></div>
 
 <div class="rgb-row">
-<input type="number" id="r" min="0" max="255" placeholder="R">
-<input type="number" id="g" min="0" max="255" placeholder="G">
-<input type="number" id="b" min="0" max="255" placeholder="B">
+<input type="number" id="rValue" min="0" max="255">
+<input type="number" id="gValue" min="0" max="255">
+<input type="number" id="bValue" min="0" max="255">
 </div>
 
-<div class="shade-popup" id="shadePopup">
-<canvas id="shadeCanvas" width="160" height="120"></canvas>
-</div>
+<div id="shadePopup" class="shade-popup"></div>
 </div>
 
 <div class="chart-card">
-<canvas id="chartCanvas"></canvas>
+<canvas id="myChart"></canvas>
 </div>
 
 <script src="script.js"></script>
