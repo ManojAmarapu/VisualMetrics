@@ -161,79 +161,81 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
 if (!chartInstance) return;
 
-const canvas = chartInstance.canvas;
-const width = canvas.width;
-const height = canvas.height;
+const sourceCanvas = chartInstance.canvas;
+const width = sourceCanvas.width;
+const height = sourceCanvas.height;
 
-/* Create white background canvas */
-const tempCanvas = document.createElement("canvas");
-tempCanvas.width = width;
-tempCanvas.height = height;
-const ctx = tempCanvas.getContext("2d");
+const exportCanvas = document.createElement("canvas");
+exportCanvas.width = width;
+exportCanvas.height = height;
+const ctx = exportCanvas.getContext("2d");
 
 /* White background */
 ctx.fillStyle = "#ffffff";
 ctx.fillRect(0, 0, width, height);
 
-/* Draw original chart */
-ctx.drawImage(canvas, 0, 0);
+/* Draw existing chart exactly as-is */
+ctx.drawImage(sourceCanvas, 0, 0);
 
-/* Draw values manually */
+/* Prepare text style */
 ctx.fillStyle = "#000000";
 ctx.font = "bold 14px Poppins";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
 
 const meta = chartInstance.getDatasetMeta(0);
-const dataset = chartInstance.data.datasets[0];
+const data = chartInstance.data.datasets[0].data;
 const type = chartInstance.config.type;
 
-/* BAR + LINE */
-if (type === "bar" || type === "line") {
-
-meta.data.forEach((element, index) => {
-
-const value = dataset.data[index];
-const position = element.tooltipPosition();
-
-ctx.fillText(value, position.x, position.y - 12);
-
+/* BAR */
+if (type === "bar") {
+meta.data.forEach((bar, i) => {
+const x = bar.x;
+const y = bar.y - 12;
+ctx.fillText(data[i], x, y);
 });
-
 }
 
-/* PIE + DOUGHNUT + POLAR */
-if (["pie","doughnut","polarArea"].includes(type)) {
-
-meta.data.forEach((element, index) => {
-
-const value = dataset.data[index];
-const center = element.tooltipPosition();
-
-ctx.fillText(value, center.x, center.y);
-
+/* LINE */
+if (type === "line") {
+meta.data.forEach((point, i) => {
+ctx.fillText(data[i], point.x, point.y - 15);
 });
+}
 
+/* PIE + DOUGHNUT */
+if (type === "pie" || type === "doughnut") {
+meta.data.forEach((arc, i) => {
+const angle = (arc.startAngle + arc.endAngle) / 2;
+const radius = (arc.innerRadius + arc.outerRadius) / 2;
+const x = arc.x + Math.cos(angle) * radius;
+const y = arc.y + Math.sin(angle) * radius;
+ctx.fillText(data[i], x, y);
+});
+}
+
+/* POLAR AREA */
+if (type === "polarArea") {
+meta.data.forEach((arc, i) => {
+const angle = (arc.startAngle + arc.endAngle) / 2;
+const radius = arc.outerRadius / 2;
+const x = arc.x + Math.cos(angle) * radius;
+const y = arc.y + Math.sin(angle) * radius;
+ctx.fillText(data[i], x, y);
+});
 }
 
 /* RADAR */
 if (type === "radar") {
-
-meta.data.forEach((point, index) => {
-
-const value = dataset.data[index];
-const position = point.tooltipPosition();
-
-ctx.fillText(value, position.x, position.y - 10);
-
+meta.data.forEach((point, i) => {
+ctx.fillText(data[i], point.x, point.y - 10);
 });
-
 }
 
 /* Download */
 const link = document.createElement("a");
 link.download = "chart.png";
-link.href = tempCanvas.toDataURL("image/png");
+link.href = exportCanvas.toDataURL("image/png");
 link.click();
 
 });
