@@ -176,30 +176,37 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
     exportCanvas.height = height;
+
     const ctx = exportCanvas.getContext("2d");
 
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Clone config safely
+    // Clone config safely (keep structuredClone since yours works)
     const exportConfig = structuredClone(chartInstance.config);
 
-    // 🔥 IMPORTANT FIXES FOR RADIAL CHART SHIFT
+    // 🔥 CRITICAL FIXES
     exportConfig.options.responsive = false;
-    exportConfig.options.maintainAspectRatio = false;
+    exportConfig.options.animation = false;
+    exportConfig.options.devicePixelRatio = 1;
 
-    // Fix legend color
+    // Force exact canvas size
+    exportConfig.options.layout = {
+        padding: 0
+    };
+
+    // Black legend
     exportConfig.options.plugins.legend.labels.color = "#000000";
 
-    // Fix axis ticks
+    // Black axis ticks
     if (exportConfig.options.scales) {
         Object.values(exportConfig.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    // Enable datalabels only for export
+    // Enable datalabels ONLY for export
     exportConfig.options.plugins.datalabels = {
         display: true,
         color: "#000000",
@@ -207,17 +214,15 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
             weight: "bold",
             size: 14
         },
-        formatter: function(value) {
-            return value;
-        },
-        anchor: function(context) {
-            const type = context.chart.config.type;
+        formatter: (value) => value,
+        anchor: (ctx) => {
+            const type = ctx.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "end";
             return "center";
         },
-        align: function(context) {
-            const type = context.chart.config.type;
+        align: (ctx) => {
+            const type = ctx.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "top";
             return "center";
@@ -234,6 +239,6 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         link.click();
 
         exportChart.destroy();
-    }, 300);
+    }, 200);
 
 });
