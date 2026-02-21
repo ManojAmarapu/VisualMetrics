@@ -1,4 +1,13 @@
 let currentChart = null;
+let selectedColor = "#4F46E5";
+
+document.querySelectorAll(".color-box").forEach(box => {
+box.addEventListener("click", () => {
+document.querySelectorAll(".color-box").forEach(b => b.classList.remove("active"));
+box.classList.add("active");
+selectedColor = box.dataset.color;
+});
+});
 
 function generateChart() {
 
@@ -6,7 +15,6 @@ const title = document.getElementById('title').value || "Untitled Chart";
 const type = document.getElementById('type').value;
 const labels = document.getElementById('labels').value.split(',').map(l => l.trim());
 const data = document.getElementById('data').value.split(',').map(n => Number(n.trim()));
-const color = document.getElementById('colorPicker').value;
 
 if (labels.length !== data.length || data.some(isNaN)) {
 alert("Labels & data must match and contain valid numbers.");
@@ -24,21 +32,17 @@ labels: labels,
 datasets: [{
 label: title,
 data: data,
-backgroundColor: color,
-borderColor: color,
+backgroundColor: selectedColor,
+borderColor: selectedColor,
 borderWidth: 2
 }]
 },
 options: {
 responsive: true,
 maintainAspectRatio: false,
-animation: {
-duration: 800
-},
+animation: { duration: 800 },
 plugins: {
-legend: {
-labels: { color: "#ffffff" }
-},
+legend: { labels: { color: "#ffffff" }},
 title: {
 display: true,
 text: title,

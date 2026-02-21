@@ -1,19 +1,19 @@
-body {
+/* GLOBAL RESET */
+* {
+box-sizing: border-box;
 margin: 0;
+padding: 0;
+}
+
+body {
 font-family: 'Poppins', sans-serif;
 background: url("assets/image.png") no-repeat center center fixed;
 background-size: cover;
-display: flex;
-justify-content: center;
-}
-
-.page-wrapper {
-width: 100%;
-max-width: 900px;
-padding: 40px 20px;
 text-align: center;
+padding: 40px 20px;
 }
 
+/* TITLE */
 h1 {
 color: #ffffff;
 font-size: 42px;
@@ -25,57 +25,104 @@ color: rgba(255,255,255,0.85);
 margin-bottom: 30px;
 }
 
-.glass-card {
+/* INPUT CONTAINER */
+.input-container {
+max-width: 700px;
+margin: auto;
+padding: 30px;
 background: rgba(20, 25, 45, 0.65);
 backdrop-filter: blur(15px);
-padding: 30px;
-border-radius: 18px;
-box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+border-radius: 16px;
+box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+text-align: left;
 }
 
+/* LABEL */
 label {
 display: block;
-text-align: left;
 color: #ffffff;
-margin: 12px 0 5px;
 font-size: 14px;
+margin-top: 15px;
+margin-bottom: 6px;
+font-weight: 500;
 }
 
-input, select {
+/* INPUTS & SELECT FIXED SIZE */
+input,
+select {
 width: 100%;
-padding: 10px;
+height: 44px;              /* Fixed equal height */
+padding: 0 12px;           /* Equal padding */
 border-radius: 8px;
 border: none;
 font-size: 14px;
-margin-bottom: 8px;
+outline: none;
+background: rgba(255,255,255,0.95);
 }
 
-.buttons {
-margin-top: 15px;
+/* BUTTON ROW */
+.button-row {
+margin-top: 30px;
 display: flex;
-gap: 12px;
 justify-content: center;
+gap: 15px;
 }
 
 button {
-padding: 10px 20px;
+height: 42px;
+padding: 0 22px;
 border-radius: 8px;
 border: none;
 cursor: pointer;
 font-weight: 600;
-background: linear-gradient(135deg, #ff6b35, #ff914d);
+background: linear-gradient(135deg, #2563EB, #4F46E5);
 color: white;
 transition: 0.3s ease;
 }
 
 button:hover {
 transform: translateY(-2px);
-box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
-.chart-wrapper {
-margin-top: 30px;
-height: 400px;
+/* COLOR SELECTOR */
+.color-selector {
+margin-top: 25px;
+color: #ffffff;
+font-size: 14px;
+}
+
+.colors {
+display: flex;
+justify-content: center;
+gap: 14px;
+margin-top: 12px;
+}
+
+.color-box {
+width: 30px;
+height: 30px;
+border-radius: 8px;
+cursor: pointer;
+border: 2px solid transparent;
+transition: 0.2s ease;
+}
+
+.color-box.active {
+border: 2px solid white;
+transform: scale(1.1);
+}
+
+/* CHART CONTAINER */
+.chart-container {
+max-width: 800px;
+margin: 35px auto;
+padding: 30px;
+background: rgba(20, 25, 45, 0.65);
+backdrop-filter: blur(15px);
+border-radius: 16px;
+box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+height: 420px;
 }
 
 canvas {
