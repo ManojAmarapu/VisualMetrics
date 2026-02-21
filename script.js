@@ -1,11 +1,11 @@
 let currentChart = null;
 let selectedColor = "#4F46E5";
 
-document.querySelectorAll(".color-box").forEach(box => {
-box.addEventListener("click", () => {
-document.querySelectorAll(".color-box").forEach(b => b.classList.remove("active"));
-box.classList.add("active");
-selectedColor = box.dataset.color;
+document.querySelectorAll(".color").forEach(color => {
+color.addEventListener("click", () => {
+document.querySelectorAll(".color").forEach(c => c.classList.remove("active"));
+color.classList.add("active");
+selectedColor = color.dataset.color;
 });
 });
 
@@ -40,7 +40,7 @@ borderWidth: 2
 options: {
 responsive: true,
 maintainAspectRatio: false,
-animation: { duration: 800 },
+animation: { duration: 700 },
 plugins: {
 legend: { labels: { color: "#ffffff" }},
 title: {
@@ -73,11 +73,11 @@ tempCanvas.width = canvas.width;
 tempCanvas.height = canvas.height;
 
 ctx.fillStyle = "#ffffff";
-ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-ctx.drawImage(canvas, 0, 0);
+ctx.fillRect(0,0,tempCanvas.width,tempCanvas.height);
+ctx.drawImage(canvas,0,0);
 
 const link = document.createElement('a');
 link.download = "chart.png";
-link.href = tempCanvas.toDataURL("image/png");
+link.href = tempCanvas.toDataURL();
 link.click();
 }

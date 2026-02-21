@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisualMetrics</title>
 
-<link rel="icon" href="/favicon.ico?v=70">
-<link rel="manifest" href="site.webmanifest" />
-
+<link rel="icon" href="/favicon.ico?v=100">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 
@@ -19,8 +17,8 @@
 <h1>VisualMetrics</h1>
 <p class="subtitle">Interactive Data Visualization Tool</p>
 
-<!-- INPUT SECTION -->
-<div class="input-container">
+<!-- INPUT SHADOW CONTAINER -->
+<div class="input-card">
 
 <label>Chart Title</label>
 <input type="text" id="title" placeholder="Monthly Sales">
@@ -43,27 +41,27 @@
 
 </div>
 
-<!-- BUTTONS -->
+<!-- BUTTONS (NO SHADOW) -->
 <div class="button-row">
 <button onclick="generateChart()">Generate Chart</button>
 <button onclick="downloadChart()">Download Chart</button>
 </div>
 
-<!-- COLOR PALETTE -->
-<div class="color-selector">
-<span>Select Chart Color:</span>
-<div class="colors">
-<div class="color-box active" data-color="#4F46E5" style="background:#4F46E5"></div>
-<div class="color-box" data-color="#2563EB" style="background:#2563EB"></div>
-<div class="color-box" data-color="#10B981" style="background:#10B981"></div>
-<div class="color-box" data-color="#F59E0B" style="background:#F59E0B"></div>
-<div class="color-box" data-color="#EF4444" style="background:#EF4444"></div>
-<div class="color-box" data-color="#EAB308" style="background:#EAB308"></div>
+<!-- CLEAN PROFESSIONAL COLOR SELECTOR -->
+<div class="color-picker-row">
+<span>Chart Color:</span>
+<div class="color-options">
+<div class="color active" data-color="#4F46E5" style="background:#4F46E5;"></div>
+<div class="color" data-color="#2563EB" style="background:#2563EB;"></div>
+<div class="color" data-color="#10B981" style="background:#10B981;"></div>
+<div class="color" data-color="#F97316" style="background:#F97316;"></div>
+<div class="color" data-color="#EF4444" style="background:#EF4444;"></div>
+<div class="color" data-color="#EAB308" style="background:#EAB308;"></div>
 </div>
 </div>
 
-<!-- CHART SECTION -->
-<div class="chart-container">
+<!-- CHART SHADOW CONTAINER -->
+<div class="chart-card">
 <canvas id="chartCanvas"></canvas>
 </div>
 
