@@ -158,8 +158,31 @@ legend: { labels: { color: "white" } }
 /* ---------- DOWNLOAD ---------- */
 
 document.getElementById("downloadBtn").addEventListener("click", function(){
+
+const originalBg = chartInstance.options.plugins.backgroundColor;
+
+// Create temporary white background plugin
+Chart.register({
+id: 'customCanvasBackgroundColor',
+beforeDraw: (chart) => {
+const ctx = chart.ctx;
+ctx.save();
+ctx.globalCompositeOperation = 'destination-over';
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, chart.width, chart.height);
+ctx.restore();
+}
+});
+
+// Force update
+chartInstance.update();
+
+// Download image
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = chartInstance.toBase64Image();
 link.click();
+
+// Remove plugin after download
+Chart.unregister('customCanvasBackgroundColor');
 });
