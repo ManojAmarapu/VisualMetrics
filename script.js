@@ -147,11 +147,18 @@ fill: type === "line" ? false : true
 }]
 },
 options: {
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: { labels: { color: "white" } }
-}
+    responsive: true,
+    plugins: {
+        legend: {
+            labels: { color: "white" }
+        },
+        tooltip: {
+            enabled: true
+        },
+        datalabels: {
+            display: false   // IMPORTANT: disable on web view
+        }
+    }
 }
 });
 });
@@ -160,73 +167,72 @@ legend: { labels: { color: "white" } }
 
 document.getElementById("downloadBtn").addEventListener("click", function () {
 
-if (!chartInstance) return;
+    if (!chartInstance) return;
 
-const originalConfig = chartInstance.config;
-const width = chartInstance.canvas.width;
-const height = chartInstance.canvas.height;
+    const originalCanvas = chartInstance.canvas;
+    const width = originalCanvas.width;
+    const height = originalCanvas.height;
 
-/* Create clean export canvas */
-const exportCanvas = document.createElement("canvas");
-exportCanvas.width = width;
-exportCanvas.height = height;
-const exportCtx = exportCanvas.getContext("2d");
+    // Create separate export canvas
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = width;
+    exportCanvas.height = height;
+    const ctx = exportCanvas.getContext("2d");
 
-/* White background */
-exportCtx.fillStyle = "#ffffff";
-exportCtx.fillRect(0, 0, width, height);
+    // White background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
 
-/* Deep clone config safely */
-const exportConfig = structuredClone(originalConfig);
+    // Clone chart config safely
+    const exportConfig = structuredClone(chartInstance.config);
 
-/* Force black legend */
-exportConfig.options.plugins.legend.labels.color = "#000000";
+    // Force black legend
+    exportConfig.options.plugins.legend.labels.color = "#000000";
 
-/* Force black scales */
-if (exportConfig.options.scales) {
-Object.values(exportConfig.options.scales).forEach(scale => {
-if (scale.ticks) scale.ticks.color = "#000000";
-});
-}
+    // Force black scale ticks
+    if (exportConfig.options.scales) {
+        Object.values(exportConfig.options.scales).forEach(scale => {
+            if (scale.ticks) scale.ticks.color = "#000000";
+        });
+    }
 
-/* Enable datalabels correctly per chart */
-exportConfig.options.plugins.datalabels = {
-color: "#000000",
-font: {
-weight: "bold",
-size: 14
-},
-formatter: function(value) {
-return value;
-},
-anchor: function(context) {
-const type = context.chart.config.type;
-if (type === "bar") return "end";
-if (type === "line") return "end";
-return "center";
-},
-align: function(context) {
-const type = context.chart.config.type;
-if (type === "bar") return "end";
-if (type === "line") return "top";
-return "center";
-},
-clamp: true
-};
+    // Enable datalabels ONLY for export
+    exportConfig.options.plugins.datalabels = {
+        display: true,
+        color: "#000000",
+        font: {
+            weight: "bold",
+            size: 14
+        },
+        formatter: function(value) {
+            return value;
+        },
+        anchor: function(context) {
+            const type = context.chart.config.type;
+            if (type === "bar") return "end";
+            if (type === "line") return "end";
+            return "center";
+        },
+        align: function(context) {
+            const type = context.chart.config.type;
+            if (type === "bar") return "end";
+            if (type === "line") return "top";
+            return "center";
+        },
+        clamp: true
+    };
 
-/* Render export chart */
-const exportChart = new Chart(exportCtx, exportConfig);
+    // Render export-only chart
+    const exportChart = new Chart(ctx, exportConfig);
 
-/* Wait for render */
-setTimeout(() => {
+    // Wait for rendering
+    setTimeout(() => {
+        const link = document.createElement("a");
+        link.download = "chart.png";
+        link.href = exportCanvas.toDataURL("image/png");
+        link.click();
 
-const link = document.createElement("a");
-link.download = "chart.png";
-link.href = exportCanvas.toDataURL("image/png");
-link.click();
-
-exportChart.destroy();
-
-}, 300);
+        exportChart.destroy();
+    }, 300);
 
 });
