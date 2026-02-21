@@ -169,41 +169,37 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    const width = chartInstance.width;
-    const height = chartInstance.height;
+    const originalCanvas = chartInstance.canvas;
+    const width = originalCanvas.width;
+    const height = originalCanvas.height;
 
-    // Create invisible export canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
     exportCanvas.height = height;
-
-    // IMPORTANT: keep it off screen
-    exportCanvas.style.position = "absolute";
-    exportCanvas.style.left = "-9999px";
-    document.body.appendChild(exportCanvas);
-
     const ctx = exportCanvas.getContext("2d");
 
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Safe deep clone (without structuredClone)
-    const exportConfig = JSON.parse(JSON.stringify(chartInstance.config));
+    // Clone config safely
+    const exportConfig = structuredClone(chartInstance.config);
 
-    // Fix alignment for radial charts
-    exportConfig.options.layout = {
-        padding: 30
-    };
+    // 🔥 IMPORTANT FIXES FOR RADIAL CHART SHIFT
+    exportConfig.options.responsive = false;
+    exportConfig.options.maintainAspectRatio = false;
 
+    // Fix legend color
     exportConfig.options.plugins.legend.labels.color = "#000000";
 
+    // Fix axis ticks
     if (exportConfig.options.scales) {
         Object.values(exportConfig.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
+    // Enable datalabels only for export
     exportConfig.options.plugins.datalabels = {
         display: true,
         color: "#000000",
@@ -211,15 +207,17 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
             weight: "bold",
             size: 14
         },
-        formatter: (value) => value,
-        anchor: (ctx) => {
-            const type = ctx.chart.config.type;
+        formatter: function(value) {
+            return value;
+        },
+        anchor: function(context) {
+            const type = context.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "end";
             return "center";
         },
-        align: (ctx) => {
-            const type = ctx.chart.config.type;
+        align: function(context) {
+            const type = context.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "top";
             return "center";
@@ -236,7 +234,6 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         link.click();
 
         exportChart.destroy();
-        document.body.removeChild(exportCanvas);
     }, 300);
 
 });
