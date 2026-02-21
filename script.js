@@ -169,34 +169,41 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    const originalCanvas = chartInstance.canvas;
-    const width = originalCanvas.width;
-    const height = originalCanvas.height;
+    const width = chartInstance.width;
+    const height = chartInstance.height;
 
-    // Create separate export canvas
+    // Create invisible export canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
     exportCanvas.height = height;
+
+    // IMPORTANT: keep it off screen
+    exportCanvas.style.position = "absolute";
+    exportCanvas.style.left = "-9999px";
+    document.body.appendChild(exportCanvas);
+
     const ctx = exportCanvas.getContext("2d");
 
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Clone chart config safely
-    const exportConfig = structuredClone(chartInstance.config);
+    // Safe deep clone (without structuredClone)
+    const exportConfig = JSON.parse(JSON.stringify(chartInstance.config));
 
-    // Force black legend
+    // Fix alignment for radial charts
+    exportConfig.options.layout = {
+        padding: 30
+    };
+
     exportConfig.options.plugins.legend.labels.color = "#000000";
 
-    // Force black scale ticks
     if (exportConfig.options.scales) {
         Object.values(exportConfig.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    // Enable datalabels ONLY for export
     exportConfig.options.plugins.datalabels = {
         display: true,
         color: "#000000",
@@ -204,17 +211,15 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
             weight: "bold",
             size: 14
         },
-        formatter: function(value) {
-            return value;
-        },
-        anchor: function(context) {
-            const type = context.chart.config.type;
+        formatter: (value) => value,
+        anchor: (ctx) => {
+            const type = ctx.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "end";
             return "center";
         },
-        align: function(context) {
-            const type = context.chart.config.type;
+        align: (ctx) => {
+            const type = ctx.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "top";
             return "center";
@@ -222,10 +227,8 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         clamp: true
     };
 
-    // Render export-only chart
     const exportChart = new Chart(ctx, exportConfig);
 
-    // Wait for rendering
     setTimeout(() => {
         const link = document.createElement("a");
         link.download = "chart.png";
@@ -233,6 +236,7 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         link.click();
 
         exportChart.destroy();
+        document.body.removeChild(exportCanvas);
     }, 300);
 
 });
