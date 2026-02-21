@@ -2,11 +2,13 @@ const ctx = document.getElementById("myChart").getContext("2d");
 let chartInstance;
 let selectedColor = "rgb(22,126,75)";
 
-/* Color Picker */
 const spectrum = document.getElementById("colorSpectrum");
 const rInput = document.getElementById("rValue");
 const gInput = document.getElementById("gValue");
 const bInput = document.getElementById("bValue");
+const shadePopup = document.getElementById("shadePopup");
+
+/* ---------- COLOR PICKER ---------- */
 
 function updateColor(r, g, b) {
 selectedColor = `rgb(${r},${g},${b})`;
@@ -21,15 +23,49 @@ const x = e.clientX - rect.left;
 const percent = x / rect.width;
 const hue = Math.floor(percent * 360);
 
-const color = `hsl(${hue}, 100%, 50%)`;
-const temp = document.createElement("div");
-temp.style.color = color;
-document.body.appendChild(temp);
-const rgb = getComputedStyle(temp).color;
-document.body.removeChild(temp);
+showShadePicker(hue);
+});
 
-const values = rgb.match(/\d+/g);
-updateColor(values[0], values[1], values[2]);
+/* Shade popup */
+function showShadePicker(hue) {
+shadePopup.innerHTML = "";
+shadePopup.style.display = "block";
+
+const canvas = document.createElement("canvas");
+canvas.width = 180;
+canvas.height = 120;
+shadePopup.appendChild(canvas);
+
+const c = canvas.getContext("2d");
+
+/* Gradient background */
+const gradient = c.createLinearGradient(0, 0, 180, 0);
+gradient.addColorStop(0, "white");
+gradient.addColorStop(1, `hsl(${hue},100%,50%)`);
+c.fillStyle = gradient;
+c.fillRect(0, 0, 180, 120);
+
+const blackGrad = c.createLinearGradient(0, 0, 0, 120);
+blackGrad.addColorStop(0, "rgba(0,0,0,0)");
+blackGrad.addColorStop(1, "rgba(0,0,0,1)");
+c.fillStyle = blackGrad;
+c.fillRect(0, 0, 180, 120);
+
+canvas.addEventListener("click", function(e){
+const rect = canvas.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+const pixel = c.getImageData(x, y, 1, 1).data;
+updateColor(pixel[0], pixel[1], pixel[2]);
+shadePopup.style.display = "none";
+});
+}
+
+/* Close popup outside click */
+document.addEventListener("click", function(e){
+if (!shadePopup.contains(e.target) && e.target !== spectrum) {
+shadePopup.style.display = "none";
+}
 });
 
 [rInput, gInput, bInput].forEach(input => {
@@ -38,7 +74,8 @@ updateColor(rInput.value, gInput.value, bInput.value);
 });
 });
 
-/* Shade generator */
+/* ---------- SHADES FOR MULTI COLOR CHARTS ---------- */
+
 function generateShades(baseColor, count) {
 const rgb = baseColor.match(/\d+/g).map(Number);
 const shades = [];
@@ -53,7 +90,8 @@ shades.push(`rgb(${r},${g},${b})`);
 return shades;
 }
 
-/* Generate Chart */
+/* ---------- GENERATE CHART ---------- */
+
 document.getElementById("generateBtn").addEventListener("click", function() {
 
 const title = document.getElementById("chartTitle").value;
@@ -103,9 +141,19 @@ fill: type === "line" ? false : true
 },
 options: {
 responsive: true,
+maintainAspectRatio: false,
 plugins: {
 legend: { labels: { color: "white" } }
 }
 }
 });
+});
+
+/* ---------- DOWNLOAD ---------- */
+
+document.getElementById("downloadBtn").addEventListener("click", function(){
+const link = document.createElement("a");
+link.download = "chart.png";
+link.href = chartInstance.toBase64Image();
+link.click();
 });
