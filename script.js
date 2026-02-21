@@ -161,26 +161,19 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
 if (!chartInstance) return;
 
-const originalCanvas = chartInstance.canvas;
-const width = originalCanvas.width;
-const height = originalCanvas.height;
+/* Enable Data Labels temporarily */
+chartInstance.options.plugins.datalabels = {
+color: '#000000',
+font: {
+weight: 'bold',
+size: 14
+},
+formatter: function(value) {
+return value;
+}
+};
 
-/* ========= STORE ORIGINAL COLORS ========= */
-
-const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
-
-let originalXTickColor, originalYTickColor, originalRTickColor;
-
-if (chartInstance.options.scales?.x?.ticks)
-originalXTickColor = chartInstance.options.scales.x.ticks.color;
-
-if (chartInstance.options.scales?.y?.ticks)
-originalYTickColor = chartInstance.options.scales.y.ticks.color;
-
-if (chartInstance.options.scales?.r?.ticks)
-originalRTickColor = chartInstance.options.scales.r.ticks.color;
-
-/* Switch to black for export */
+/* Switch text to black */
 chartInstance.options.plugins.legend.labels.color = "#000000";
 
 if (chartInstance.options.scales?.x?.ticks)
@@ -192,86 +185,40 @@ chartInstance.options.scales.y.ticks.color = "#000000";
 if (chartInstance.options.scales?.r?.ticks)
 chartInstance.options.scales.r.ticks.color = "#000000";
 
-chartInstance.update("none");
+chartInstance.update();
 
-/* ========= CREATE WHITE CANVAS ========= */
-
+/* Create white background export */
+const canvas = chartInstance.canvas;
 const tempCanvas = document.createElement("canvas");
-tempCanvas.width = width;
-tempCanvas.height = height;
-const tempCtx = tempCanvas.getContext("2d");
+tempCanvas.width = canvas.width;
+tempCanvas.height = canvas.height;
 
-tempCtx.fillStyle = "#ffffff";
-tempCtx.fillRect(0, 0, width, height);
-tempCtx.drawImage(originalCanvas, 0, 0);
+const ctx = tempCanvas.getContext("2d");
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+ctx.drawImage(canvas, 0, 0);
 
-/* ========= DRAW VALUES USING TRUE CENTER ========= */
-
-const type = chartInstance.config.type;
-const dataset = chartInstance.data.datasets[0];
-const meta = chartInstance.getDatasetMeta(0);
-
-tempCtx.fillStyle = "#000000";
-tempCtx.font = "bold 15px Poppins";
-tempCtx.textAlign = "center";
-tempCtx.textBaseline = "middle";
-
-/* Pie, Doughnut, Polar Area */
-if (["pie","doughnut","polarArea"].includes(type)) {
-
-meta.data.forEach((element, index) => {
-
-const value = dataset.data[index];
-const center = element.getCenterPoint();
-
-tempCtx.fillText(value, center.x, center.y);
-
-});
-
-}
-
-/* Radar */
-if (type === "radar") {
-
-meta.data.forEach((point, index) => {
-
-const value = dataset.data[index];
-
-/* Slight outward offset */
-const angle = Math.atan2(
-point.y - meta.data[0].y,
-point.x - meta.data[0].x
-);
-
-const offsetX = point.x + Math.cos(angle) * 12;
-const offsetY = point.y + Math.sin(angle) * 12;
-
-tempCtx.fillText(value, offsetX, offsetY);
-
-});
-
-}
-
-/* ========= DOWNLOAD ========= */
-
+/* Download */
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
 
-/* ========= RESTORE ORIGINAL ========= */
+/* Disable Data Labels again */
+chartInstance.options.plugins.datalabels = false;
 
-chartInstance.options.plugins.legend.labels.color = originalLegendColor;
+/* Restore white legend text */
+chartInstance.options.plugins.legend.labels.color = "#ffffff";
 
 if (chartInstance.options.scales?.x?.ticks)
-chartInstance.options.scales.x.ticks.color = originalXTickColor;
+chartInstance.options.scales.x.ticks.color = "#ffffff";
 
 if (chartInstance.options.scales?.y?.ticks)
-chartInstance.options.scales.y.ticks.color = originalYTickColor;
+chartInstance.options.scales.y.ticks.color = "#ffffff";
 
 if (chartInstance.options.scales?.r?.ticks)
-chartInstance.options.scales.r.ticks.color = originalRTickColor;
+chartInstance.options.scales.r.ticks.color = "#ffffff";
 
-chartInstance.update("none");
+chartInstance.update();
 
 });
