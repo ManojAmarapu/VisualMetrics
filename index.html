@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisualMetrics</title>
 
-<link rel="icon" href="/favicon.ico?v=100">
+<link rel="icon" href="/favicon.ico?v=200">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 
@@ -14,12 +14,11 @@
 
 <body>
 
-<h1>VisualMetrics</h1>
-<p class="subtitle">Interactive Data Visualization Tool</p>
+<h1 class="main-title">VisualMetrics</h1>
+<p class="subtitle blue-text">Interactive Data Visualization Tool</p>
 
-<!-- INPUT SHADOW CONTAINER -->
+<!-- INPUT CARD -->
 <div class="input-card">
-
 <label>Chart Title</label>
 <input type="text" id="title" placeholder="Monthly Sales">
 
@@ -38,29 +37,33 @@
 
 <label>Data (comma separated numbers)</label>
 <input type="text" id="data" placeholder="10, 20, 30">
-
 </div>
 
-<!-- BUTTONS (NO SHADOW) -->
+<!-- BUTTONS -->
 <div class="button-row">
 <button onclick="generateChart()">Generate Chart</button>
 <button onclick="downloadChart()">Download Chart</button>
 </div>
 
-<!-- CLEAN PROFESSIONAL COLOR SELECTOR -->
-<div class="color-picker-row">
-<span>Chart Color:</span>
-<div class="color-options">
-<div class="color active" data-color="#4F46E5" style="background:#4F46E5;"></div>
-<div class="color" data-color="#2563EB" style="background:#2563EB;"></div>
-<div class="color" data-color="#10B981" style="background:#10B981;"></div>
-<div class="color" data-color="#F97316" style="background:#F97316;"></div>
-<div class="color" data-color="#EF4444" style="background:#EF4444;"></div>
-<div class="color" data-color="#EAB308" style="background:#EAB308;"></div>
-</div>
+<!-- COLOR PICKER SMALL CARD -->
+<div class="color-card">
+<p>Select Chart Color</p>
+<div class="color-spectrum" id="spectrum"></div>
+
+<div class="rgb-inputs">
+<input type="number" id="r" min="0" max="255" placeholder="R">
+<input type="number" id="g" min="0" max="255" placeholder="G">
+<input type="number" id="b" min="0" max="255" placeholder="B">
 </div>
 
-<!-- CHART SHADOW CONTAINER -->
+<!-- Popup Shade Panel -->
+<div class="shade-popup" id="shadePopup">
+<canvas id="shadeCanvas"></canvas>
+</div>
+
+</div>
+
+<!-- CHART CARD -->
 <div class="chart-card">
 <canvas id="chartCanvas"></canvas>
 </div>

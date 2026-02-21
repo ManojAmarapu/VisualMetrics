@@ -1,11 +1,68 @@
 let currentChart = null;
-let selectedColor = "#4F46E5";
+let selectedColor = "rgb(79,70,229)";
 
-document.querySelectorAll(".color").forEach(color => {
-color.addEventListener("click", () => {
-document.querySelectorAll(".color").forEach(c => c.classList.remove("active"));
-color.classList.add("active");
-selectedColor = color.dataset.color;
+const spectrum = document.getElementById("spectrum");
+const popup = document.getElementById("shadePopup");
+const shadeCanvas = document.getElementById("shadeCanvas");
+const ctxShade = shadeCanvas.getContext("2d");
+
+const rInput = document.getElementById("r");
+const gInput = document.getElementById("g");
+const bInput = document.getElementById("b");
+
+/* Draw Shade Square */
+function drawShade(baseColor) {
+const gradientX = ctxShade.createLinearGradient(0,0,shadeCanvas.width,0);
+gradientX.addColorStop(0,"white");
+gradientX.addColorStop(1,baseColor);
+
+ctxShade.fillStyle = gradientX;
+ctxShade.fillRect(0,0,shadeCanvas.width,shadeCanvas.height);
+
+const gradientY = ctxShade.createLinearGradient(0,0,0,shadeCanvas.height);
+gradientY.addColorStop(0,"rgba(0,0,0,0)");
+gradientY.addColorStop(1,"black");
+
+ctxShade.fillStyle = gradientY;
+ctxShade.fillRect(0,0,shadeCanvas.width,shadeCanvas.height);
+}
+
+/* Spectrum Click */
+spectrum.addEventListener("click",(e)=>{
+popup.style.display="block";
+
+const rect = spectrum.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const percent = x / rect.width;
+const hue = percent * 360;
+
+const baseColor = `hsl(${hue},100%,50%)`;
+drawShade(baseColor);
+});
+
+/* Shade Click */
+shadeCanvas.addEventListener("click",(e)=>{
+const rect = shadeCanvas.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+
+const pixel = ctxShade.getImageData(x,y,1,1).data;
+
+rInput.value = pixel[0];
+gInput.value = pixel[1];
+bInput.value = pixel[2];
+
+selectedColor = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
+popup.style.display="none";
+});
+
+/* RGB Manual Input */
+[rInput,gInput,bInput].forEach(input=>{
+input.addEventListener("input",()=>{
+const r=rInput.value||0;
+const g=gInput.value||0;
+const b=bInput.value||0;
+selectedColor=`rgb(${r},${g},${b})`;
 });
 });
 
@@ -22,62 +79,46 @@ return;
 }
 
 const ctx = document.getElementById('chartCanvas').getContext('2d');
-
 if (currentChart) currentChart.destroy();
 
-currentChart = new Chart(ctx, {
-type: type,
-data: {
-labels: labels,
-datasets: [{
-label: title,
-data: data,
-backgroundColor: selectedColor,
-borderColor: selectedColor,
-borderWidth: 2
+currentChart = new Chart(ctx,{
+type:type,
+data:{
+labels:labels,
+datasets:[{
+label:title,
+data:data,
+backgroundColor:selectedColor,
+borderColor:selectedColor,
+borderWidth:2
 }]
 },
-options: {
-responsive: true,
-maintainAspectRatio: false,
-animation: { duration: 700 },
-plugins: {
-legend: { labels: { color: "#ffffff" }},
-title: {
-display: true,
-text: title,
-color: "#ffffff",
-font: { size: 18 }
-}
+options:{
+responsive:true,
+maintainAspectRatio:false,
+plugins:{
+legend:{labels:{color:"#ffffff"}},
+title:{display:true,text:title,color:"#ffffff"}
 },
-scales: ['bar','line'].includes(type) ? {
-x: {
-ticks: { color: "#ffffff" },
-grid: { color: "rgba(255,255,255,0.1)" }
-},
-y: {
-ticks: { color: "#ffffff" },
-grid: { color: "rgba(255,255,255,0.1)" }
-}
-} : {}
+scales:['bar','line'].includes(type)?{
+x:{ticks:{color:"#ffffff"},grid:{color:"rgba(255,255,255,0.1)"}},
+y:{ticks:{color:"#ffffff"},grid:{color:"rgba(255,255,255,0.1)"}}
+}:{}
 }
 });
 }
 
-function downloadChart() {
-const canvas = document.getElementById('chartCanvas');
-const tempCanvas = document.createElement('canvas');
-const ctx = tempCanvas.getContext('2d');
-
-tempCanvas.width = canvas.width;
-tempCanvas.height = canvas.height;
-
-ctx.fillStyle = "#ffffff";
-ctx.fillRect(0,0,tempCanvas.width,tempCanvas.height);
+function downloadChart(){
+const canvas=document.getElementById('chartCanvas');
+const temp=document.createElement('canvas');
+const ctx=temp.getContext('2d');
+temp.width=canvas.width;
+temp.height=canvas.height;
+ctx.fillStyle="#ffffff";
+ctx.fillRect(0,0,temp.width,temp.height);
 ctx.drawImage(canvas,0,0);
-
-const link = document.createElement('a');
-link.download = "chart.png";
-link.href = tempCanvas.toDataURL();
+const link=document.createElement('a');
+link.download="chart.png";
+link.href=temp.toDataURL();
 link.click();
 }

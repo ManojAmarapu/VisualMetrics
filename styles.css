@@ -1,6 +1,4 @@
-* {
-box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
 margin: 0;
@@ -11,19 +9,18 @@ text-align: center;
 padding: 40px 20px;
 }
 
-/* TITLE */
-h1 {
-color: white;
+.main-title {
+color: #2563EB;
 font-size: 42px;
 margin-bottom: 5px;
 }
 
-.subtitle {
-color: rgba(255,255,255,0.85);
+.blue-text {
+color: #4F46E5;
 margin-bottom: 35px;
 }
 
-/* INPUT SHADOW CARD */
+/* INPUT CARD */
 .input-card {
 max-width: 650px;
 margin: 0 auto;
@@ -52,7 +49,7 @@ font-size: 14px;
 background: rgba(255,255,255,0.95);
 }
 
-/* BUTTON ROW */
+/* BUTTONS */
 .button-row {
 margin-top: 25px;
 display: flex;
@@ -77,37 +74,65 @@ transform: translateY(-2px);
 box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
-/* CLEAN COLOR SELECTOR */
-.color-picker-row {
-margin-top: 20px;
-display: flex;
-justify-content: center;
-align-items: center;
-gap: 15px;
+/* COLOR CARD */
+.color-card {
+position: relative;
+max-width: 400px;
+margin: 25px auto;
+padding: 20px;
+background: rgba(20,25,45,0.65);
+backdrop-filter: blur(15px);
+border-radius: 16px;
+box-shadow: 0 15px 35px rgba(0,0,0,0.4);
 color: white;
-font-size: 14px;
 }
 
-.color-options {
-display: flex;
-gap: 12px;
-}
-
-.color {
-width: 28px;
-height: 28px;
-border-radius: 50%;
+/* COLOR SPECTRUM LINE */
+.color-spectrum {
+height: 20px;
+border-radius: 6px;
+background: linear-gradient(to right,
+red, orange, yellow, green, cyan, blue, violet, red);
 cursor: pointer;
-border: 2px solid transparent;
-transition: 0.2s ease;
+margin-bottom: 15px;
 }
 
-.color.active {
-border: 2px solid white;
-transform: scale(1.1);
+/* RGB INPUTS */
+.rgb-inputs {
+display: flex;
+gap: 8px;
+justify-content: center;
 }
 
-/* CHART SHADOW CARD */
+.rgb-inputs input {
+width: 70px;
+height: 35px;
+border-radius: 6px;
+border: none;
+text-align: center;
+}
+
+/* SHADE POPUP */
+.shade-popup {
+display: none;
+position: absolute;
+top: 60px;
+left: 50%;
+transform: translateX(-50%);
+background: white;
+padding: 8px;
+border-radius: 8px;
+box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+z-index: 10;
+}
+
+#shadeCanvas {
+width: 180px;
+height: 150px;
+cursor: crosshair;
+}
+
+/* CHART CARD */
 .chart-card {
 max-width: 750px;
 margin: 35px auto;
