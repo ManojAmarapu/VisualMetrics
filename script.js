@@ -1,118 +1,106 @@
-let currentChart = null;
-let selectedColor = "rgb(59,130,246)";
+const ctx = document.getElementById("myChart").getContext("2d");
+let chartInstance;
 
-const spectrum = document.getElementById("spectrum");
-const popup = document.getElementById("shadePopup");
-const shadeCanvas = document.getElementById("shadeCanvas");
-const ctxShade = shadeCanvas.getContext("2d");
+let selectedColor = "rgb(22,126,75)";
 
-const rInput = document.getElementById("r");
-const gInput = document.getElementById("g");
-const bInput = document.getElementById("b");
+/* ================= COLOR PICKER ================= */
 
-/* Draw shade square */
-function drawShade(hue){
-const gradientX = ctxShade.createLinearGradient(0,0,shadeCanvas.width,0);
-gradientX.addColorStop(0,"white");
-gradientX.addColorStop(1,`hsl(${hue},100%,50%)`);
-
-ctxShade.fillStyle = gradientX;
-ctxShade.fillRect(0,0,shadeCanvas.width,shadeCanvas.height);
-
-const gradientY = ctxShade.createLinearGradient(0,0,0,shadeCanvas.height);
-gradientY.addColorStop(0,"rgba(0,0,0,0)");
-gradientY.addColorStop(1,"black");
-
-ctxShade.fillStyle = gradientY;
-ctxShade.fillRect(0,0,shadeCanvas.width,shadeCanvas.height);
+function updateSelectedColor(r, g, b) {
+selectedColor = `rgb(${r},${g},${b})`;
 }
 
-/* Spectrum click */
-spectrum.addEventListener("click",(e)=>{
-const rect = spectrum.getBoundingClientRect();
-const x = e.clientX - rect.left;
-const percent = x / rect.width;
-const hue = percent * 360;
+document.getElementById("rValue").addEventListener("input", syncRGB);
+document.getElementById("gValue").addEventListener("input", syncRGB);
+document.getElementById("bValue").addEventListener("input", syncRGB);
 
-drawShade(hue);
-popup.style.display = "block";
-});
-
-/* Shade pick */
-shadeCanvas.addEventListener("click",(e)=>{
-const rect = shadeCanvas.getBoundingClientRect();
-const x = e.clientX - rect.left;
-const y = e.clientY - rect.top;
-
-const pixel = ctxShade.getImageData(x,y,1,1).data;
-
-rInput.value = pixel[0];
-gInput.value = pixel[1];
-bInput.value = pixel[2];
-
-selectedColor = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
-popup.style.display = "none";
-});
-
-/* RGB manual input */
-[rInput,gInput,bInput].forEach(input=>{
-input.addEventListener("input",()=>{
-selectedColor = `rgb(${rInput.value||0},${gInput.value||0},${bInput.value||0})`;
-});
-});
-
-function generateChart(){
-const title = document.getElementById('title').value || "Untitled";
-const type = document.getElementById('type').value;
-const labels = document.getElementById('labels').value.split(',').map(l=>l.trim());
-const data = document.getElementById('data').value.split(',').map(n=>Number(n.trim()));
-
-if(labels.length !== data.length || data.some(isNaN)){
-alert("Labels & Data mismatch");
-return;
+function syncRGB() {
+const r = document.getElementById("rValue").value;
+const g = document.getElementById("gValue").value;
+const b = document.getElementById("bValue").value;
+updateSelectedColor(r, g, b);
 }
 
-const ctx = document.getElementById('chartCanvas').getContext('2d');
-if(currentChart) currentChart.destroy();
+/* ================= SMART SHADE GENERATOR ================= */
 
-currentChart = new Chart(ctx,{
-type:type,
-data:{
-labels:labels,
-datasets:[{
-label:title,
-data:data,
-backgroundColor:selectedColor,
-borderColor:selectedColor,
-borderWidth:2
+function generateShades(baseColor, count) {
+const rgb = baseColor.match(/\d+/g).map(Number);
+const shades = [];
+
+for (let i = 0; i < count; i++) {
+let factor = 0.6 + (i / count);
+let r = Math.min(255, Math.floor(rgb[0] * factor));
+let g = Math.min(255, Math.floor(rgb[1] * factor));
+let b = Math.min(255, Math.floor(rgb[2] * factor));
+shades.push(`rgb(${r},${g},${b})`);
+}
+return shades;
+}
+
+/* ================= GENERATE CHART ================= */
+
+function generateChart() {
+
+const title = document.getElementById("chartTitle").value;
+const type = document.getElementById("chartType").value;
+const labels = document.getElementById("labels").value.split(",");
+const data = document.getElementById("data").value.split(",").map(Number);
+
+if (chartInstance) chartInstance.destroy();
+
+let backgroundColors;
+let borderColor;
+let borderWidth;
+
+/* ===== CHART TYPE LOGIC ===== */
+
+if (type === "bar") {
+backgroundColors = selectedColor;
+borderColor = "#ffffff";
+borderWidth = 2;
+}
+
+else if (type === "line") {
+backgroundColors = selectedColor;
+borderColor = selectedColor;
+borderWidth = 3;
+}
+
+else if (["pie","doughnut","polarArea"].includes(type)) {
+backgroundColors = generateShades(selectedColor, labels.length);
+borderColor = "#ffffff";
+borderWidth = 2;
+}
+
+else if (type === "radar") {
+backgroundColors = selectedColor.replace("rgb", "rgba").replace(")", ",0.4)");
+borderColor = selectedColor;
+borderWidth = 2;
+}
+
+chartInstance = new Chart(ctx, {
+type: type,
+data: {
+labels: labels,
+datasets: [{
+label: title,
+data: data,
+backgroundColor: backgroundColors,
+borderColor: borderColor,
+borderWidth: borderWidth,
+fill: type === "line" ? false : true
 }]
 },
-options:{
-responsive:true,
-maintainAspectRatio:false,
-plugins:{
-legend:{labels:{color:"#fff"}},
-title:{display:true,text:title,color:"#fff"}
+options: {
+responsive: true,
+plugins: {
+legend: {
+labels: { color: "white" }
+}
 },
-scales:['bar','line'].includes(type)?{
-x:{ticks:{color:"#fff"},grid:{color:"rgba(255,255,255,0.1)"}},
-y:{ticks:{color:"#fff"},grid:{color:"rgba(255,255,255,0.1)"}}
-}:{}
+scales: type === "radar" ? {} : {
+x: { ticks: { color: "white" } },
+y: { ticks: { color: "white" } }
+}
 }
 });
-}
-
-function downloadChart(){
-const canvas=document.getElementById('chartCanvas');
-const temp=document.createElement('canvas');
-const ctx=temp.getContext('2d');
-temp.width=canvas.width;
-temp.height=canvas.height;
-ctx.fillStyle="#ffffff";
-ctx.fillRect(0,0,temp.width,temp.height);
-ctx.drawImage(canvas,0,0);
-const link=document.createElement('a');
-link.download="chart.png";
-link.href=temp.toDataURL();
-link.click();
 }
