@@ -175,7 +175,34 @@ originalYTickColor = chartInstance.options.scales.y.ticks.color;
 if (chartInstance.options.scales?.r?.ticks)
 originalRTickColor = chartInstance.options.scales.r.ticks.color;
 
-/* ---------- CHANGE TEXT TO BLACK ---------- */
+/* ---------- TEMP VALUE PLUGIN FOR EXPORT ONLY ---------- */
+const exportValuePlugin = {
+id: 'exportValuePlugin',
+afterDraw(chart) {
+
+if (!['pie','doughnut'].includes(chart.config.type)) return;
+
+const { ctx } = chart;
+const dataset = chart.data.datasets[0];
+const meta = chart.getDatasetMeta(0);
+
+ctx.save();
+ctx.fillStyle = "#000000";
+ctx.font = "bold 16px Poppins";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+
+meta.data.forEach((element, index) => {
+const value = dataset.data[index];
+const position = element.tooltipPosition();
+ctx.fillText(value, position.x, position.y);
+});
+
+ctx.restore();
+}
+};
+
+/* ---------- APPLY BLACK TEXT FOR EXPORT ---------- */
 chartInstance.options.plugins.legend.labels.color = "#000000";
 
 if (chartInstance.options.scales?.x?.ticks)
@@ -187,10 +214,14 @@ chartInstance.options.scales.y.ticks.color = "#000000";
 if (chartInstance.options.scales?.r?.ticks)
 chartInstance.options.scales.r.ticks.color = "#000000";
 
-/* ---------- FORCE FULL RENDER ---------- */
+/* ---------- REGISTER EXPORT PLUGIN ---------- */
+chartInstance.config.plugins = chartInstance.config.plugins || [];
+chartInstance.config.plugins.push(exportValuePlugin);
+
+/* ---------- FORCE RENDER ---------- */
 chartInstance.update("none");
 
-/* ---------- CREATE WHITE BACKGROUND EXPORT ---------- */
+/* ---------- CREATE WHITE EXPORT ---------- */
 const originalCanvas = chartInstance.canvas;
 const width = originalCanvas.width;
 const height = originalCanvas.height;
@@ -201,18 +232,17 @@ tempCanvas.height = height;
 
 const tempCtx = tempCanvas.getContext("2d");
 
-// White background
 tempCtx.fillStyle = "#ffffff";
 tempCtx.fillRect(0, 0, width, height);
-
-// Draw updated chart
 tempCtx.drawImage(originalCanvas, 0, 0);
 
-// Download
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
+
+/* ---------- REMOVE EXPORT PLUGIN ---------- */
+chartInstance.config.plugins.pop();
 
 /* ---------- RESTORE ORIGINAL COLORS ---------- */
 chartInstance.options.plugins.legend.labels.color = originalLegendColor;
