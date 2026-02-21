@@ -159,30 +159,30 @@ legend: { labels: { color: "white" } }
 
 document.getElementById("downloadBtn").addEventListener("click", function(){
 
-const originalBg = chartInstance.options.plugins.backgroundColor;
+if (!chartInstance) return;
 
-// Create temporary white background plugin
-Chart.register({
-id: 'customCanvasBackgroundColor',
-beforeDraw: (chart) => {
-const ctx = chart.ctx;
-ctx.save();
-ctx.globalCompositeOperation = 'destination-over';
-ctx.fillStyle = '#ffffff';
-ctx.fillRect(0, 0, chart.width, chart.height);
-ctx.restore();
-}
-});
+const originalCanvas = chartInstance.canvas;
+const width = originalCanvas.width;
+const height = originalCanvas.height;
 
-// Force update
-chartInstance.update();
+// Create temporary canvas
+const tempCanvas = document.createElement("canvas");
+tempCanvas.width = width;
+tempCanvas.height = height;
+
+const tempCtx = tempCanvas.getContext("2d");
+
+// Fill white background
+tempCtx.fillStyle = "#ffffff";
+tempCtx.fillRect(0, 0, width, height);
+
+// Draw original chart on top
+tempCtx.drawImage(originalCanvas, 0, 0);
 
 // Download image
 const link = document.createElement("a");
 link.download = "chart.png";
-link.href = chartInstance.toBase64Image();
+link.href = tempCanvas.toDataURL("image/png");
 link.click();
 
-// Remove plugin after download
-Chart.unregister('customCanvasBackgroundColor');
 });
