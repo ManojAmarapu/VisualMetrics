@@ -165,9 +165,7 @@ const originalCanvas = chartInstance.canvas;
 const width = originalCanvas.width;
 const height = originalCanvas.height;
 
-/* ===========================
-   STORE ORIGINAL COLORS
-=========================== */
+/* ================= STORE ORIGINAL COLORS ================= */
 
 const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
 
@@ -182,7 +180,7 @@ originalYTickColor = chartInstance.options.scales.y.ticks.color;
 if (chartInstance.options.scales?.r?.ticks)
 originalRTickColor = chartInstance.options.scales.r.ticks.color;
 
-/* Switch to black text */
+/* Switch export text to black */
 chartInstance.options.plugins.legend.labels.color = "#000000";
 
 if (chartInstance.options.scales?.x?.ticks)
@@ -196,9 +194,7 @@ chartInstance.options.scales.r.ticks.color = "#000000";
 
 chartInstance.update("none");
 
-/* ===========================
-   CREATE WHITE EXPORT CANVAS
-=========================== */
+/* ================= CREATE WHITE EXPORT ================= */
 
 const tempCanvas = document.createElement("canvas");
 tempCanvas.width = width;
@@ -207,42 +203,48 @@ const tempCtx = tempCanvas.getContext("2d");
 
 tempCtx.fillStyle = "#ffffff";
 tempCtx.fillRect(0, 0, width, height);
-
 tempCtx.drawImage(originalCanvas, 0, 0);
 
-/* ===========================
-   DRAW VALUES CLEANLY
-=========================== */
+/* ================= DRAW VALUES CLEANLY ================= */
 
 const type = chartInstance.config.type;
 const dataset = chartInstance.data.datasets[0];
 const meta = chartInstance.getDatasetMeta(0);
 
 tempCtx.fillStyle = "#000000";
-tempCtx.font = "bold 14px Poppins";
+tempCtx.font = "bold 15px Poppins";
 tempCtx.textAlign = "center";
 tempCtx.textBaseline = "middle";
 
+/* PIE + DOUGHNUT + POLAR AREA */
 if (["pie","doughnut","polarArea"].includes(type)) {
 
-meta.data.forEach((element, index) => {
+meta.data.forEach((arc, index) => {
 
 const value = dataset.data[index];
 
-const centerX = element.x;
-const centerY = element.y;
+const centerX = arc.x;
+const centerY = arc.y;
 
-const startAngle = element.startAngle;
-const endAngle = element.endAngle;
-
+const startAngle = arc.startAngle;
+const endAngle = arc.endAngle;
 const midAngle = (startAngle + endAngle) / 2;
 
 let radius;
 
+/* Doughnut */
 if (type === "doughnut") {
-radius = (element.outerRadius + element.innerRadius) / 2;
-} else {
-radius = element.outerRadius * 0.65;
+radius = arc.innerRadius + (arc.outerRadius - arc.innerRadius) / 2;
+}
+
+/* Pie */
+else if (type === "pie") {
+radius = arc.outerRadius * 0.55;
+}
+
+/* Polar Area */
+else {
+radius = arc.outerRadius * 0.6;
 }
 
 const x = centerX + Math.cos(midAngle) * radius;
@@ -253,28 +255,33 @@ tempCtx.fillText(value, x, y);
 });
 }
 
-/* Radar Values */
+/* RADAR */
 if (type === "radar") {
 
 meta.data.forEach((point, index) => {
-const value = dataset.data[index];
-tempCtx.fillText(value, point.x, point.y - 10);
-});
 
+const value = dataset.data[index];
+
+/* Slight outward offset from point */
+const dx = point.x - meta.data[0].x;
+const dy = point.y - meta.data[0].y;
+
+const offsetX = point.x + dx * 0.1;
+const offsetY = point.y + dy * 0.1;
+
+tempCtx.fillText(value, offsetX, offsetY);
+
+});
 }
 
-/* ===========================
-   DOWNLOAD IMAGE
-=========================== */
+/* ================= DOWNLOAD ================= */
 
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
 
-/* ===========================
-   RESTORE ORIGINAL COLORS
-=========================== */
+/* ================= RESTORE ORIGINAL ================= */
 
 chartInstance.options.plugins.legend.labels.color = originalLegendColor;
 
