@@ -169,11 +169,10 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    const originalCanvas = chartInstance.canvas;
-    const width = originalCanvas.width;
-    const height = originalCanvas.height;
+    const width = chartInstance.canvas.width;
+    const height = chartInstance.canvas.height;
 
-    // Create separate export canvas
+    // Create export canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
     exportCanvas.height = height;
@@ -183,20 +182,24 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Clone chart config safely
-    const exportConfig = structuredClone(chartInstance.config);
+    // Manually create clean export chart config
+    const exportConfig = {
+        type: chartInstance.config.type,
+        data: JSON.parse(JSON.stringify(chartInstance.data)),
+        options: JSON.parse(JSON.stringify(chartInstance.options))
+    };
 
     // Force black legend
     exportConfig.options.plugins.legend.labels.color = "#000000";
 
-    // Force black scale ticks
+    // Force black ticks
     if (exportConfig.options.scales) {
         Object.values(exportConfig.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    // Enable datalabels ONLY for export
+    // Enable datalabels only for export
     exportConfig.options.plugins.datalabels = {
         display: true,
         color: "#000000",
@@ -222,17 +225,16 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         clamp: true
     };
 
-    // Render export-only chart
+    // Create export chart
     const exportChart = new Chart(ctx, exportConfig);
 
-    // Wait for rendering
     setTimeout(() => {
         const link = document.createElement("a");
-        link.download = "chart.png";
         link.href = exportCanvas.toDataURL("image/png");
+        link.download = "chart.png";
         link.click();
 
         exportChart.destroy();
-    }, 300);
+    }, 400);
 
 });
