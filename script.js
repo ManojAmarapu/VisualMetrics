@@ -161,12 +161,21 @@ document.getElementById("downloadBtn").addEventListener("click", function(){
 
 if (!chartInstance) return;
 
-/* -------- STORE ORIGINAL COLORS -------- */
+/* ---------- STORE ORIGINAL COLORS ---------- */
 const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
-const originalXAxisColor = chartInstance.options.scales?.x?.ticks?.color;
-const originalYAxisColor = chartInstance.options.scales?.y?.ticks?.color;
 
-/* -------- CHANGE TO BLACK FOR EXPORT -------- */
+let originalXTickColor, originalYTickColor, originalRTickColor;
+
+if (chartInstance.options.scales?.x?.ticks)
+originalXTickColor = chartInstance.options.scales.x.ticks.color;
+
+if (chartInstance.options.scales?.y?.ticks)
+originalYTickColor = chartInstance.options.scales.y.ticks.color;
+
+if (chartInstance.options.scales?.r?.ticks)
+originalRTickColor = chartInstance.options.scales.r.ticks.color;
+
+/* ---------- CHANGE TEXT TO BLACK ---------- */
 chartInstance.options.plugins.legend.labels.color = "#000000";
 
 if (chartInstance.options.scales?.x?.ticks)
@@ -175,10 +184,13 @@ chartInstance.options.scales.x.ticks.color = "#000000";
 if (chartInstance.options.scales?.y?.ticks)
 chartInstance.options.scales.y.ticks.color = "#000000";
 
-/* -------- UPDATE CHART WITH BLACK TEXT -------- */
-chartInstance.update();
+if (chartInstance.options.scales?.r?.ticks)
+chartInstance.options.scales.r.ticks.color = "#000000";
 
-/* -------- CREATE WHITE BACKGROUND EXPORT -------- */
+/* ---------- FORCE FULL RENDER ---------- */
+chartInstance.update("none");
+
+/* ---------- CREATE WHITE BACKGROUND EXPORT ---------- */
 const originalCanvas = chartInstance.canvas;
 const width = originalCanvas.width;
 const height = originalCanvas.height;
@@ -202,15 +214,18 @@ link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
 
-/* -------- RESTORE ORIGINAL WHITE TEXT -------- */
+/* ---------- RESTORE ORIGINAL COLORS ---------- */
 chartInstance.options.plugins.legend.labels.color = originalLegendColor;
 
 if (chartInstance.options.scales?.x?.ticks)
-chartInstance.options.scales.x.ticks.color = originalXAxisColor;
+chartInstance.options.scales.x.ticks.color = originalXTickColor;
 
 if (chartInstance.options.scales?.y?.ticks)
-chartInstance.options.scales.y.ticks.color = originalYAxisColor;
+chartInstance.options.scales.y.ticks.color = originalYTickColor;
 
-chartInstance.update();
+if (chartInstance.options.scales?.r?.ticks)
+chartInstance.options.scales.r.ticks.color = originalRTickColor;
+
+chartInstance.update("none");
 
 });
