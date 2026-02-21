@@ -161,64 +161,66 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
 if (!chartInstance) return;
 
-/* Enable Data Labels temporarily */
-chartInstance.options.plugins.datalabels = {
-color: '#000000',
+const originalConfig = chartInstance.config;
+const width = chartInstance.canvas.width;
+const height = chartInstance.canvas.height;
+
+/* Create temporary canvas */
+const tempCanvas = document.createElement("canvas");
+tempCanvas.width = width;
+tempCanvas.height = height;
+const tempCtx = tempCanvas.getContext("2d");
+
+/* White background */
+tempCtx.fillStyle = "#ffffff";
+tempCtx.fillRect(0, 0, width, height);
+
+/* Clone config deeply */
+const exportConfig = JSON.parse(JSON.stringify(originalConfig));
+
+/* Force black text */
+if (!exportConfig.options.plugins) exportConfig.options.plugins = {};
+if (!exportConfig.options.plugins.legend) exportConfig.options.plugins.legend = {};
+if (!exportConfig.options.plugins.legend.labels)
+exportConfig.options.plugins.legend.labels = {};
+
+exportConfig.options.plugins.legend.labels.color = "#000000";
+
+/* Force scale ticks black */
+if (exportConfig.options.scales) {
+Object.values(exportConfig.options.scales).forEach(scale => {
+if (scale.ticks) scale.ticks.color = "#000000";
+});
+}
+
+/* Enable data labels for ALL charts */
+exportConfig.options.plugins.datalabels = {
+color: "#000000",
 font: {
-weight: 'bold',
+weight: "bold",
 size: 14
 },
+anchor: "center",
+align: "center",
 formatter: function(value) {
 return value;
 }
 };
 
-/* Switch text to black */
-chartInstance.options.plugins.legend.labels.color = "#000000";
+/* Create hidden chart */
+const exportChart = new Chart(tempCtx, exportConfig);
 
-if (chartInstance.options.scales?.x?.ticks)
-chartInstance.options.scales.x.ticks.color = "#000000";
+/* Small delay ensures render complete */
+setTimeout(() => {
 
-if (chartInstance.options.scales?.y?.ticks)
-chartInstance.options.scales.y.ticks.color = "#000000";
-
-if (chartInstance.options.scales?.r?.ticks)
-chartInstance.options.scales.r.ticks.color = "#000000";
-
-chartInstance.update();
-
-/* Create white background export */
-const canvas = chartInstance.canvas;
-const tempCanvas = document.createElement("canvas");
-tempCanvas.width = canvas.width;
-tempCanvas.height = canvas.height;
-
-const ctx = tempCanvas.getContext("2d");
-ctx.fillStyle = "#ffffff";
-ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-ctx.drawImage(canvas, 0, 0);
-
-/* Download */
 const link = document.createElement("a");
 link.download = "chart.png";
 link.href = tempCanvas.toDataURL("image/png");
 link.click();
 
-/* Disable Data Labels again */
-chartInstance.options.plugins.datalabels = false;
+/* Destroy hidden chart */
+exportChart.destroy();
 
-/* Restore white legend text */
-chartInstance.options.plugins.legend.labels.color = "#ffffff";
-
-if (chartInstance.options.scales?.x?.ticks)
-chartInstance.options.scales.x.ticks.color = "#ffffff";
-
-if (chartInstance.options.scales?.y?.ticks)
-chartInstance.options.scales.y.ticks.color = "#ffffff";
-
-if (chartInstance.options.scales?.r?.ticks)
-chartInstance.options.scales.r.ticks.color = "#ffffff";
-
-chartInstance.update();
+}, 300);
 
 });
