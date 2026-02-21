@@ -169,55 +169,59 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    const width = chartInstance.canvas.width;
-    const height = chartInstance.canvas.height;
+    const chart = chartInstance;
 
-    // Create export canvas
-    const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = width;
-    exportCanvas.height = height;
-    const ctx = exportCanvas.getContext("2d");
+    // SAVE ORIGINAL SETTINGS
+    const originalLegendColor = chart.options.plugins.legend.labels.color;
+    const originalScales = chart.options.scales
+        ? JSON.parse(JSON.stringify(chart.options.scales))
+        : null;
+    const originalDatalabels = chart.options.plugins.datalabels;
 
-    // White background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width, height);
+    // ===== MODIFY FOR DOWNLOAD =====
 
-    // Manually create clean export chart config
-    const exportConfig = {
-        type: chartInstance.config.type,
-        data: JSON.parse(JSON.stringify(chartInstance.data)),
-        options: JSON.parse(JSON.stringify(chartInstance.options))
+    // White background plugin
+    const whiteBgPlugin = {
+        id: 'whiteBg',
+        beforeDraw: (chart) => {
+            const ctx = chart.ctx;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, chart.width, chart.height);
+            ctx.restore();
+        }
     };
 
-    // Force black legend
-    exportConfig.options.plugins.legend.labels.color = "#000000";
+    Chart.register(whiteBgPlugin);
 
-    // Force black ticks
-    if (exportConfig.options.scales) {
-        Object.values(exportConfig.options.scales).forEach(scale => {
+    // Black legend text
+    chart.options.plugins.legend.labels.color = "#000000";
+
+    // Black axis text
+    if (chart.options.scales) {
+        Object.values(chart.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    // Enable datalabels only for export
-    exportConfig.options.plugins.datalabels = {
+    // Enable datalabels only for download
+    chart.options.plugins.datalabels = {
         display: true,
         color: "#000000",
         font: {
             weight: "bold",
             size: 14
         },
-        formatter: function(value) {
-            return value;
-        },
-        anchor: function(context) {
-            const type = context.chart.config.type;
+        formatter: (value) => value,
+        anchor: (ctx) => {
+            const type = ctx.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "end";
             return "center";
         },
-        align: function(context) {
-            const type = context.chart.config.type;
+        align: (ctx) => {
+            const type = ctx.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "top";
             return "center";
@@ -225,16 +229,29 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         clamp: true
     };
 
-    // Create export chart
-    const exportChart = new Chart(ctx, exportConfig);
+    chart.update();
 
+    // WAIT for render
     setTimeout(() => {
+
         const link = document.createElement("a");
-        link.href = exportCanvas.toDataURL("image/png");
+        link.href = chart.toBase64Image();
         link.download = "chart.png";
         link.click();
 
-        exportChart.destroy();
-    }, 400);
+        // ===== RESTORE ORIGINAL SETTINGS =====
 
+        chart.options.plugins.legend.labels.color = originalLegendColor;
+
+        if (originalScales) {
+            chart.options.scales = originalScales;
+        }
+
+        chart.options.plugins.datalabels = originalDatalabels;
+
+        chart.update();
+
+        Chart.unregister(whiteBgPlugin);
+
+    }, 400);
 });
