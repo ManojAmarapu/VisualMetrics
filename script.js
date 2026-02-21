@@ -173,33 +173,23 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
     const width = originalCanvas.width;
     const height = originalCanvas.height;
 
+    // Create separate export canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
     exportCanvas.height = height;
-
     const ctx = exportCanvas.getContext("2d");
 
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Clone config safely (keep structuredClone since yours works)
+    // Clone chart config safely
     const exportConfig = structuredClone(chartInstance.config);
 
-    // 🔥 CRITICAL FIXES
-    exportConfig.options.responsive = false;
-    exportConfig.options.animation = false;
-    exportConfig.options.devicePixelRatio = 1;
-
-    // Force exact canvas size
-    exportConfig.options.layout = {
-        padding: 0
-    };
-
-    // Black legend
+    // Force black legend
     exportConfig.options.plugins.legend.labels.color = "#000000";
 
-    // Black axis ticks
+    // Force black scale ticks
     if (exportConfig.options.scales) {
         Object.values(exportConfig.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
@@ -214,15 +204,17 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
             weight: "bold",
             size: 14
         },
-        formatter: (value) => value,
-        anchor: (ctx) => {
-            const type = ctx.chart.config.type;
+        formatter: function(value) {
+            return value;
+        },
+        anchor: function(context) {
+            const type = context.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "end";
             return "center";
         },
-        align: (ctx) => {
-            const type = ctx.chart.config.type;
+        align: function(context) {
+            const type = context.chart.config.type;
             if (type === "bar") return "end";
             if (type === "line") return "top";
             return "center";
@@ -230,8 +222,10 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         clamp: true
     };
 
+    // Render export-only chart
     const exportChart = new Chart(ctx, exportConfig);
 
+    // Wait for rendering
     setTimeout(() => {
         const link = document.createElement("a");
         link.download = "chart.png";
@@ -239,6 +233,6 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         link.click();
 
         exportChart.destroy();
-    }, 200);
+    }, 300);
 
 });
