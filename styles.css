@@ -1,33 +1,37 @@
-* { box-sizing: border-box; }
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+font-family: 'Poppins', sans-serif;
+}
 
 body {
-margin: 0;
-font-family: 'Poppins', sans-serif;
 background: url("assets/image.png") no-repeat center center fixed;
 background-size: cover;
 text-align: center;
-padding: 40px 20px;
+padding: 50px 20px;
 }
 
-.main-title {
+/* TITLE */
+.title {
 color: #2563EB;
 font-size: 42px;
-margin-bottom: 5px;
+margin-bottom: 8px;
 }
 
-.blue-text {
-color: #4F46E5;
+.subtitle {
+color: #3B82F6;
 margin-bottom: 35px;
 }
 
 /* INPUT CARD */
 .input-card {
-max-width: 650px;
-margin: 0 auto;
-padding: 30px;
+max-width: 600px;
+margin: auto;
+padding: 28px;
 background: rgba(20,25,45,0.65);
 backdrop-filter: blur(15px);
-border-radius: 16px;
+border-radius: 14px;
 box-shadow: 0 15px 35px rgba(0,0,0,0.4);
 text-align: left;
 }
@@ -36,12 +40,12 @@ label {
 display: block;
 color: white;
 font-size: 14px;
-margin: 15px 0 6px;
+margin: 14px 0 6px;
 }
 
 input, select {
 width: 100%;
-height: 44px;
+height: 42px;
 padding: 0 12px;
 border-radius: 8px;
 border: none;
@@ -58,15 +62,15 @@ gap: 15px;
 }
 
 button {
-height: 42px;
-padding: 0 24px;
+height: 40px;
+padding: 0 22px;
 border-radius: 8px;
 border: none;
 cursor: pointer;
 font-weight: 600;
-background: linear-gradient(135deg,#2563EB,#4F46E5);
+background: linear-gradient(135deg,#2563EB,#3B82F6);
 color: white;
-transition: 0.3s ease;
+transition: 0.3s;
 }
 
 button:hover {
@@ -77,69 +81,68 @@ box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 /* COLOR CARD */
 .color-card {
 position: relative;
-max-width: 400px;
+max-width: 320px;
 margin: 25px auto;
-padding: 20px;
+padding: 18px;
 background: rgba(20,25,45,0.65);
 backdrop-filter: blur(15px);
-border-radius: 16px;
-box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+border-radius: 14px;
+box-shadow: 0 12px 30px rgba(0,0,0,0.4);
 color: white;
 }
 
-/* COLOR SPECTRUM LINE */
-.color-spectrum {
-height: 20px;
+.color-header {
+font-size: 14px;
+margin-bottom: 10px;
+}
+
+/* SPECTRUM LINE */
+.spectrum {
+height: 16px;
 border-radius: 6px;
 background: linear-gradient(to right,
 red, orange, yellow, green, cyan, blue, violet, red);
 cursor: pointer;
-margin-bottom: 15px;
+margin-bottom: 12px;
 }
 
-/* RGB INPUTS */
-.rgb-inputs {
+/* RGB ROW */
+.rgb-row {
 display: flex;
 gap: 8px;
 justify-content: center;
 }
 
-.rgb-inputs input {
-width: 70px;
-height: 35px;
+.rgb-row input {
+width: 65px;
+height: 32px;
 border-radius: 6px;
 border: none;
 text-align: center;
 }
 
-/* SHADE POPUP */
+/* POPUP */
 .shade-popup {
 display: none;
 position: absolute;
-top: 60px;
+top: 55px;
 left: 50%;
 transform: translateX(-50%);
 background: white;
-padding: 8px;
+padding: 6px;
 border-radius: 8px;
-box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-z-index: 10;
-}
-
-#shadeCanvas {
-width: 180px;
-height: 150px;
-cursor: crosshair;
+box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+z-index: 100;
 }
 
 /* CHART CARD */
 .chart-card {
 max-width: 750px;
 margin: 35px auto;
-padding: 30px;
+padding: 28px;
 background: rgba(20,25,45,0.65);
 backdrop-filter: blur(15px);
-border-radius: 16px;
+border-radius: 14px;
 box-shadow: 0 15px 35px rgba(0,0,0,0.4);
 height: 420px;
 }

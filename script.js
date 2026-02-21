@@ -1,5 +1,5 @@
 let currentChart = null;
-let selectedColor = "rgb(79,70,229)";
+let selectedColor = "rgb(59,130,246)";
 
 const spectrum = document.getElementById("spectrum");
 const popup = document.getElementById("shadePopup");
@@ -10,11 +10,11 @@ const rInput = document.getElementById("r");
 const gInput = document.getElementById("g");
 const bInput = document.getElementById("b");
 
-/* Draw Shade Square */
-function drawShade(baseColor) {
+/* Draw shade square */
+function drawShade(hue){
 const gradientX = ctxShade.createLinearGradient(0,0,shadeCanvas.width,0);
 gradientX.addColorStop(0,"white");
-gradientX.addColorStop(1,baseColor);
+gradientX.addColorStop(1,`hsl(${hue},100%,50%)`);
 
 ctxShade.fillStyle = gradientX;
 ctxShade.fillRect(0,0,shadeCanvas.width,shadeCanvas.height);
@@ -27,20 +27,18 @@ ctxShade.fillStyle = gradientY;
 ctxShade.fillRect(0,0,shadeCanvas.width,shadeCanvas.height);
 }
 
-/* Spectrum Click */
+/* Spectrum click */
 spectrum.addEventListener("click",(e)=>{
-popup.style.display="block";
-
 const rect = spectrum.getBoundingClientRect();
 const x = e.clientX - rect.left;
 const percent = x / rect.width;
 const hue = percent * 360;
 
-const baseColor = `hsl(${hue},100%,50%)`;
-drawShade(baseColor);
+drawShade(hue);
+popup.style.display = "block";
 });
 
-/* Shade Click */
+/* Shade pick */
 shadeCanvas.addEventListener("click",(e)=>{
 const rect = shadeCanvas.getBoundingClientRect();
 const x = e.clientX - rect.left;
@@ -53,33 +51,29 @@ gInput.value = pixel[1];
 bInput.value = pixel[2];
 
 selectedColor = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
-popup.style.display="none";
+popup.style.display = "none";
 });
 
-/* RGB Manual Input */
+/* RGB manual input */
 [rInput,gInput,bInput].forEach(input=>{
 input.addEventListener("input",()=>{
-const r=rInput.value||0;
-const g=gInput.value||0;
-const b=bInput.value||0;
-selectedColor=`rgb(${r},${g},${b})`;
+selectedColor = `rgb(${rInput.value||0},${gInput.value||0},${bInput.value||0})`;
 });
 });
 
-function generateChart() {
-
-const title = document.getElementById('title').value || "Untitled Chart";
+function generateChart(){
+const title = document.getElementById('title').value || "Untitled";
 const type = document.getElementById('type').value;
-const labels = document.getElementById('labels').value.split(',').map(l => l.trim());
-const data = document.getElementById('data').value.split(',').map(n => Number(n.trim()));
+const labels = document.getElementById('labels').value.split(',').map(l=>l.trim());
+const data = document.getElementById('data').value.split(',').map(n=>Number(n.trim()));
 
-if (labels.length !== data.length || data.some(isNaN)) {
-alert("Labels & data must match and contain valid numbers.");
+if(labels.length !== data.length || data.some(isNaN)){
+alert("Labels & Data mismatch");
 return;
 }
 
 const ctx = document.getElementById('chartCanvas').getContext('2d');
-if (currentChart) currentChart.destroy();
+if(currentChart) currentChart.destroy();
 
 currentChart = new Chart(ctx,{
 type:type,
@@ -97,12 +91,12 @@ options:{
 responsive:true,
 maintainAspectRatio:false,
 plugins:{
-legend:{labels:{color:"#ffffff"}},
-title:{display:true,text:title,color:"#ffffff"}
+legend:{labels:{color:"#fff"}},
+title:{display:true,text:title,color:"#fff"}
 },
 scales:['bar','line'].includes(type)?{
-x:{ticks:{color:"#ffffff"},grid:{color:"rgba(255,255,255,0.1)"}},
-y:{ticks:{color:"#ffffff"},grid:{color:"rgba(255,255,255,0.1)"}}
+x:{ticks:{color:"#fff"},grid:{color:"rgba(255,255,255,0.1)"}},
+y:{ticks:{color:"#fff"},grid:{color:"rgba(255,255,255,0.1)"}}
 }:{}
 }
 });

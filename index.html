@@ -5,19 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisualMetrics</title>
 
-<link rel="icon" href="/favicon.ico?v=200">
+<link rel="icon" href="/favicon.ico?v=300">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<h1 class="main-title">VisualMetrics</h1>
-<p class="subtitle blue-text">Interactive Data Visualization Tool</p>
+<h1 class="title">VisualMetrics</h1>
+<p class="subtitle">Interactive Data Visualization Tool</p>
 
-<!-- INPUT CARD -->
 <div class="input-card">
 <label>Chart Title</label>
 <input type="text" id="title" placeholder="Monthly Sales">
@@ -39,31 +37,28 @@
 <input type="text" id="data" placeholder="10, 20, 30">
 </div>
 
-<!-- BUTTONS -->
 <div class="button-row">
 <button onclick="generateChart()">Generate Chart</button>
 <button onclick="downloadChart()">Download Chart</button>
 </div>
 
-<!-- COLOR PICKER SMALL CARD -->
+<!-- COLOR PICKER CARD -->
 <div class="color-card">
-<p>Select Chart Color</p>
-<div class="color-spectrum" id="spectrum"></div>
+<div class="color-header">Select Chart Color</div>
 
-<div class="rgb-inputs">
+<div class="spectrum" id="spectrum"></div>
+
+<div class="rgb-row">
 <input type="number" id="r" min="0" max="255" placeholder="R">
 <input type="number" id="g" min="0" max="255" placeholder="G">
 <input type="number" id="b" min="0" max="255" placeholder="B">
 </div>
 
-<!-- Popup Shade Panel -->
 <div class="shade-popup" id="shadePopup">
-<canvas id="shadeCanvas"></canvas>
+<canvas id="shadeCanvas" width="160" height="120"></canvas>
+</div>
 </div>
 
-</div>
-
-<!-- CHART CARD -->
 <div class="chart-card">
 <canvas id="chartCanvas"></canvas>
 </div>
