@@ -166,7 +166,7 @@ const width = originalCanvas.width;
 const height = originalCanvas.height;
 
 /* ===========================
-   TEMPORARILY MODIFY CHART
+   STORE ORIGINAL COLORS
 =========================== */
 
 const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
@@ -182,7 +182,7 @@ originalYTickColor = chartInstance.options.scales.y.ticks.color;
 if (chartInstance.options.scales?.r?.ticks)
 originalRTickColor = chartInstance.options.scales.r.ticks.color;
 
-/* Change text to black */
+/* Switch to black text */
 chartInstance.options.plugins.legend.labels.color = "#000000";
 
 if (chartInstance.options.scales?.x?.ticks)
@@ -194,7 +194,6 @@ chartInstance.options.scales.y.ticks.color = "#000000";
 if (chartInstance.options.scales?.r?.ticks)
 chartInstance.options.scales.r.ticks.color = "#000000";
 
-/* Force redraw */
 chartInstance.update("none");
 
 /* ===========================
@@ -204,35 +203,64 @@ chartInstance.update("none");
 const tempCanvas = document.createElement("canvas");
 tempCanvas.width = width;
 tempCanvas.height = height;
-
 const tempCtx = tempCanvas.getContext("2d");
 
-/* White background */
 tempCtx.fillStyle = "#ffffff";
 tempCtx.fillRect(0, 0, width, height);
 
-/* Draw chart */
 tempCtx.drawImage(originalCanvas, 0, 0);
 
 /* ===========================
-   DRAW VALUES FOR PIE / DOUGHNUT ONLY
+   DRAW VALUES CLEANLY
 =========================== */
 
-if (["pie", "doughnut"].includes(chartInstance.config.type)) {
-
+const type = chartInstance.config.type;
 const dataset = chartInstance.data.datasets[0];
 const meta = chartInstance.getDatasetMeta(0);
 
 tempCtx.fillStyle = "#000000";
-tempCtx.font = "bold 16px Poppins";
+tempCtx.font = "bold 14px Poppins";
 tempCtx.textAlign = "center";
 tempCtx.textBaseline = "middle";
 
+if (["pie","doughnut","polarArea"].includes(type)) {
+
 meta.data.forEach((element, index) => {
+
 const value = dataset.data[index];
-const position = element.tooltipPosition();
-tempCtx.fillText(value, position.x, position.y);
+
+const centerX = element.x;
+const centerY = element.y;
+
+const startAngle = element.startAngle;
+const endAngle = element.endAngle;
+
+const midAngle = (startAngle + endAngle) / 2;
+
+let radius;
+
+if (type === "doughnut") {
+radius = (element.outerRadius + element.innerRadius) / 2;
+} else {
+radius = element.outerRadius * 0.65;
+}
+
+const x = centerX + Math.cos(midAngle) * radius;
+const y = centerY + Math.sin(midAngle) * radius;
+
+tempCtx.fillText(value, x, y);
+
 });
+}
+
+/* Radar Values */
+if (type === "radar") {
+
+meta.data.forEach((point, index) => {
+const value = dataset.data[index];
+tempCtx.fillText(value, point.x, point.y - 10);
+});
+
 }
 
 /* ===========================
