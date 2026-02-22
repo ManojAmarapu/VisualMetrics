@@ -103,60 +103,80 @@ return shades;
 
 document.getElementById("downloadBtn").addEventListener("click", function () {
 
-if (!chartInstance) return;
+    if (!chartInstance) return;
 
-const originalLegendColor =
-chartInstance.options.plugins.legend.labels.color;
+    // Save original values
+    const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
+    const originalDataLabels = { ...chartInstance.options.plugins.datalabels };
 
-const originalDataLabels =
-chartInstance.options.plugins.datalabels;
+    let originalTickColors = {};
 
-chartInstance.options.plugins.legend.labels.color = "#000000";
+    if (chartInstance.options.scales) {
+        Object.keys(chartInstance.options.scales).forEach(key => {
+            const scale = chartInstance.options.scales[key];
+            if (scale.ticks) {
+                originalTickColors[key] = scale.ticks.color;
+            }
+        });
+    }
 
-if (chartInstance.options.scales) {
-Object.values(chartInstance.options.scales).forEach(scale => {
-if (scale.ticks) scale.ticks.color = "#000000";
-});
-}
+    // ---------- APPLY EXPORT STYLING ----------
 
-chartInstance.options.plugins.datalabels = {
-display: true,
-color: "#000000",
-font: {
-weight: "bold",
-size: 14
-},
-formatter: function(value) {
-return value;
-},
-anchor: function(context) {
-const type = context.chart.config.type;
-if (type === "bar") return "end";
-if (type === "line") return "end";
-return "center";
-},
-align: function(context) {
-const type = context.chart.config.type;
-if (type === "bar") return "end";
-if (type === "line") return "top";
-return "center";
-},
-clamp: true
-};
+    chartInstance.options.plugins.legend.labels.color = "#000000";
 
-chartInstance.update();
+    if (chartInstance.options.scales) {
+        Object.values(chartInstance.options.scales).forEach(scale => {
+            if (scale.ticks) scale.ticks.color = "#000000";
+        });
+    }
 
-setTimeout(() => {
+    // DO NOT replace object — modify properties only
+    chartInstance.options.plugins.datalabels.display = true;
+    chartInstance.options.plugins.datalabels.color = "#000000";
+    chartInstance.options.plugins.datalabels.font = {
+        weight: "bold",
+        size: 14
+    };
+    chartInstance.options.plugins.datalabels.formatter = value => value;
+    chartInstance.options.plugins.datalabels.clamp = true;
 
-const link = document.createElement("a");
-link.download = "chart.png";
-link.href = chartInstance.toBase64Image("image/png", 1);
-link.click();
+    chartInstance.update();
 
-chartInstance.options.plugins.legend.labels.color = originalLegendColor;
-chartInstance.options.plugins.datalabels = originalDataLabels;
+    setTimeout(() => {
 
-chartInstance.update();
+        // Create white background export canvas
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = chartInstance.canvas.width;
+        exportCanvas.height = chartInstance.canvas.height;
 
-}, 300);
+        const ctx = exportCanvas.getContext("2d");
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        ctx.drawImage(chartInstance.canvas, 0, 0);
+
+        const link = document.createElement("a");
+        link.download = "chart.png";
+        link.href = exportCanvas.toDataURL("image/png", 1);
+        link.click();
+
+        // ---------- RESTORE ORIGINAL VALUES ----------
+
+        chartInstance.options.plugins.legend.labels.color = originalLegendColor;
+
+        chartInstance.options.plugins.datalabels = originalDataLabels;
+
+        if (chartInstance.options.scales) {
+            Object.keys(chartInstance.options.scales).forEach(key => {
+                const scale = chartInstance.options.scales[key];
+                if (scale.ticks) {
+                    scale.ticks.color = originalTickColors[key];
+                }
+            });
+        }
+
+        chartInstance.update();
+
+    }, 250);
 });
