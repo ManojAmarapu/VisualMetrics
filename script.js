@@ -105,9 +105,11 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    // Save original values
+    // Save original primitive values only
     const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
-    const originalDataLabels = { ...chartInstance.options.plugins.datalabels };
+
+    const originalDataLabelsDisplay = chartInstance.options.plugins.datalabels.display;
+    const originalDataLabelsColor = chartInstance.options.plugins.datalabels.color;
 
     let originalTickColors = {};
 
@@ -120,31 +122,35 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         });
     }
 
-    // ---------- APPLY EXPORT STYLING ----------
+    // ---------- APPLY EXPORT STYLE ----------
 
+    // Make legend black
     chartInstance.options.plugins.legend.labels.color = "#000000";
 
+    // Make axis ticks black
     if (chartInstance.options.scales) {
         Object.values(chartInstance.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    // DO NOT replace object — modify properties only
+    // Enable datalabels safely (DO NOT replace object)
     chartInstance.options.plugins.datalabels.display = true;
     chartInstance.options.plugins.datalabels.color = "#000000";
     chartInstance.options.plugins.datalabels.font = {
         weight: "bold",
         size: 14
     };
-    chartInstance.options.plugins.datalabels.formatter = value => value;
+    chartInstance.options.plugins.datalabels.formatter = function(value) {
+        return value;
+    };
     chartInstance.options.plugins.datalabels.clamp = true;
 
     chartInstance.update();
 
     setTimeout(() => {
 
-        // Create white background export canvas
+        // Create white background canvas
         const exportCanvas = document.createElement("canvas");
         exportCanvas.width = chartInstance.canvas.width;
         exportCanvas.height = chartInstance.canvas.height;
@@ -161,11 +167,12 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         link.href = exportCanvas.toDataURL("image/png", 1);
         link.click();
 
-        // ---------- RESTORE ORIGINAL VALUES ----------
+        // ---------- RESTORE ORIGINAL STYLE ----------
 
         chartInstance.options.plugins.legend.labels.color = originalLegendColor;
 
-        chartInstance.options.plugins.datalabels = originalDataLabels;
+        chartInstance.options.plugins.datalabels.display = originalDataLabelsDisplay;
+        chartInstance.options.plugins.datalabels.color = originalDataLabelsColor;
 
         if (chartInstance.options.scales) {
             Object.keys(chartInstance.options.scales).forEach(key => {
@@ -178,5 +185,5 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
         chartInstance.update();
 
-    }, 250);
+    }, 200);
 });
