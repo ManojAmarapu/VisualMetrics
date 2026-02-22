@@ -177,49 +177,37 @@ document.getElementById("generateBtn").addEventListener("click", function () {
 
 /* ---------- DOWNLOAD ---------- */
 
-document.getElementById("downloadBtn").addEventListener("click", async function () {
+document.getElementById("downloadBtn").addEventListener("click", function () {
 
-    if (!chartInstance) return;
+    if (!chartInstance) {
+        alert("Please generate a chart first.");
+        return;
+    }
 
     const originalCanvas = chartInstance.canvas;
-
-    // Lock exact pixel size
     const width = originalCanvas.width;
     const height = originalCanvas.height;
 
-    // Create export canvas (NOT added to DOM → no flash)
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
     exportCanvas.height = height;
 
     const exportCtx = exportCanvas.getContext("2d");
 
-    // Solid white background
+    // White background
     exportCtx.fillStyle = "#ffffff";
     exportCtx.fillRect(0, 0, width, height);
 
-    // Deep clone config
     const exportConfig = structuredClone(chartInstance.config);
 
-    /* -----------------------------
-       GLOBAL HARD LOCK SETTINGS
-    ------------------------------*/
-
+    /* LOCK SETTINGS */
     exportConfig.options.responsive = false;
     exportConfig.options.maintainAspectRatio = false;
     exportConfig.options.animation = false;
-    exportConfig.options.resizeDelay = 0;
     exportConfig.options.devicePixelRatio = 1;
+    exportConfig.options.layout = { padding: 20 };
 
-    // VERY IMPORTANT: Remove automatic padding shifts
-    exportConfig.options.layout = {
-        padding: 20
-    };
-
-    /* -----------------------------
-       FORCE BLACK TEXT
-    ------------------------------*/
-
+    /* BLACK TEXT */
     exportConfig.options.plugins.legend.labels.color = "#000000";
 
     if (exportConfig.options.scales) {
@@ -229,10 +217,7 @@ document.getElementById("downloadBtn").addEventListener("click", async function 
         });
     }
 
-    /* -----------------------------
-       ENABLE DATALABELS (EXPORT ONLY)
-    ------------------------------*/
-
+    /* DATALABELS ONLY FOR EXPORT */
     exportConfig.options.plugins.datalabels = {
         display: true,
         color: "#000000",
@@ -245,40 +230,30 @@ document.getElementById("downloadBtn").addEventListener("click", async function 
         clamp: true,
         anchor: function(ctx) {
             const type = ctx.chart.config.type;
-
             if (type === "bar") return "end";
             if (type === "line") return "end";
-            return "center"; // radial charts
+            return "center";
         },
         align: function(ctx) {
             const type = ctx.chart.config.type;
-
             if (type === "bar") return "end";
             if (type === "line") return "top";
-            return "center"; // radial charts
+            return "center";
         }
     };
 
-    /* -----------------------------
-       CREATE EXPORT CHART
-    ------------------------------*/
-
     const exportChart = new Chart(exportCtx, exportConfig);
 
-    // Wait for proper rendering
-    await new Promise(resolve => {
-        exportChart.once('render', resolve);
-        exportChart.update();
-    });
+    // Force immediate render
+    exportChart.update();
 
-    /* -----------------------------
-       DOWNLOAD SAFE
-    ------------------------------*/
-
+    // Download safely
     const link = document.createElement("a");
     link.href = exportCanvas.toDataURL("image/png");
     link.download = "chart.png";
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
 
     exportChart.destroy();
 });
