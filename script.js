@@ -99,6 +99,82 @@ return shades;
 
 /* ---------- GENERATE CHART ---------- */
 
+document.getElementById("generateBtn").addEventListener("click", function () {
+
+    const title = document.getElementById("chartTitle").value;
+    const type = document.getElementById("chartType").value;
+    const labelsInput = document.getElementById("labels").value;
+    const dataInput = document.getElementById("data").value;
+
+    if (!labelsInput || !dataInput) {
+        alert("Please enter labels and data.");
+        return;
+    }
+
+    const labels = labelsInput.split(",").map(l => l.trim());
+    const data = dataInput.split(",").map(d => Number(d.trim()));
+
+    if (labels.length !== data.length) {
+        alert("Labels and Data count must match.");
+        return;
+    }
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    const backgroundColors =
+        type === "pie" ||
+        type === "doughnut" ||
+        type === "polarArea"
+            ? generateShades(selectedColor, data.length)
+            : selectedColor;
+
+    chartInstance = new Chart(ctx, {
+        type: type,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: title,
+                data: data,
+                backgroundColor: backgroundColors,
+                borderColor: selectedColor,
+                borderWidth: 2,
+                fill: type === "line" ? false : true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#ffffff"
+                    }
+                },
+                tooltip: {
+                    enabled: true
+                },
+                datalabels: {
+                    display: false // VERY IMPORTANT (web view must hide values)
+                }
+            },
+            scales: type === "bar" || type === "line"
+                ? {
+                    x: {
+                        ticks: { color: "#ffffff" },
+                        grid: { color: "rgba(255,255,255,0.1)" }
+                    },
+                    y: {
+                        ticks: { color: "#ffffff" },
+                        grid: { color: "rgba(255,255,255,0.1)" }
+                    }
+                }
+                : {}
+        }
+    });
+});
+
 /* ---------- DOWNLOAD ---------- */
 
 document.getElementById("downloadBtn").addEventListener("click", async function () {
