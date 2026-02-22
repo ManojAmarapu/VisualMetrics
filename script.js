@@ -99,132 +99,79 @@ return shades;
 
 /* ---------- GENERATE CHART ---------- */
 
-document.getElementById("generateBtn").addEventListener("click", function() {
-
-const title = document.getElementById("chartTitle").value;
-const type = document.getElementById("chartType").value;
-const labels = document.getElementById("labels").value.split(",");
-const data = document.getElementById("data").value.split(",").map(Number);
-
-if (chartInstance) chartInstance.destroy();
-
-let bg;
-let borderColor;
-let borderWidth;
-
-if (type === "bar") {
-bg = selectedColor;
-borderColor = "#ffffff";
-borderWidth = 2;
-}
-else if (type === "line") {
-bg = selectedColor;
-borderColor = selectedColor;
-borderWidth = 3;
-}
-else if (["pie","doughnut","polarArea"].includes(type)) {
-bg = generateShades(selectedColor, labels.length);
-borderColor = "#ffffff";
-borderWidth = 2;
-}
-else if (type === "radar") {
-bg = selectedColor.replace("rgb","rgba").replace(")",",0.4)");
-borderColor = selectedColor;
-borderWidth = 2;
-}
-
-chartInstance = new Chart(ctx, {
-type: type,
-data: {
-labels: labels,
-datasets: [{
-label: title,
-data: data,
-backgroundColor: bg,
-borderColor: borderColor,
-borderWidth: borderWidth,
-fill: type === "line" ? false : true
-}]
-},
-options: {
-    responsive: true,
-    plugins: {
-        legend: {
-            labels: { color: "white" }
-        },
-        tooltip: {
-            enabled: true
-        },
-        datalabels: {
-            display: false   // IMPORTANT: disable on web view
-        }
-    }
-}
-});
-});
-
 /* ---------- DOWNLOAD ---------- */
 
 document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    // Save original options
-    const originalLegendColor =
-        chartInstance.options.plugins.legend.labels.color;
+    // Store original config safely
+    const originalOptions = JSON.parse(JSON.stringify(chartInstance.options));
 
-    const originalDataLabels =
-        chartInstance.options.plugins.datalabels;
+    // Set white background temporarily
+    chartInstance.options.plugins = {
+        ...chartInstance.options.plugins,
+        legend: {
+            ...chartInstance.options.plugins.legend,
+            labels: { color: "#000000" }
+        },
+        datalabels: {
+            display: true,
+            color: "#000000",
+            font: {
+                weight: "bold",
+                size: 14
+            },
+            formatter: value => value,
+            anchor: context => {
+                const type = context.chart.config.type;
+                if (type === "bar") return "end";
+                if (type === "line") return "end";
+                return "center";
+            },
+            align: context => {
+                const type = context.chart.config.type;
+                if (type === "bar") return "end";
+                if (type === "line") return "top";
+                return "center";
+            },
+            clamp: true
+        }
+    };
 
-    // Change for export
-    chartInstance.options.plugins.legend.labels.color = "#000000";
-
+    // Force axis text black for export
     if (chartInstance.options.scales) {
         Object.values(chartInstance.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
 
-    chartInstance.options.plugins.datalabels = {
-        display: true,
-        color: "#000000",
-        font: {
-            weight: "bold",
-            size: 14
-        },
-        formatter: function(value) {
-            return value;
-        },
-        anchor: function(context) {
-            const type = context.chart.config.type;
-            if (type === "bar") return "end";
-            if (type === "line") return "end";
-            return "center";
-        },
-        align: function(context) {
-            const type = context.chart.config.type;
-            if (type === "bar") return "end";
-            if (type === "line") return "top";
-            return "center";
-        },
-        clamp: true
-    };
-
-    // Update chart with export settings
     chartInstance.update();
 
     setTimeout(() => {
 
+        // Create white background canvas
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = chartInstance.canvas.width;
+        exportCanvas.height = chartInstance.canvas.height;
+
+        const ctx = exportCanvas.getContext("2d");
+
+        // White background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        // Draw chart on top
+        ctx.drawImage(chartInstance.canvas, 0, 0);
+
         const link = document.createElement("a");
         link.download = "chart.png";
-        link.href = chartInstance.toBase64Image("image/png", 1);
+        link.href = exportCanvas.toDataURL("image/png", 1);
         link.click();
 
-        // Restore original settings
-        chartInstance.options.plugins.legend.labels.color = originalLegendColor;
-        chartInstance.options.plugins.datalabels = originalDataLabels;
-
+        // Restore original options completely
+        chartInstance.options = originalOptions;
         chartInstance.update();
 
-    }, 300);
+    }, 200);
 });
