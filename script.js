@@ -198,10 +198,6 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
     exportCtx.fillStyle = "#ffffff";
     exportCtx.fillRect(0, 0, width, height);
 
-    /* ------------------------------------
-       BUILD NEW CONFIG (NO CLONING)
-    -------------------------------------*/
-
     const type = original.config.type;
     const labels = original.data.labels;
     const dataset = original.data.datasets[0];
@@ -223,7 +219,7 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
             responsive: false,
             maintainAspectRatio: false,
             animation: false,
-            devicePixelRatio: 1,
+            devicePixelRatio: 2,
             layout: { padding: 20 },
 
             plugins: {
@@ -233,8 +229,6 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
                     }
                 },
                 tooltip: { enabled: false },
-
-                // ENABLE values for export
                 datalabels: {
                     display: true,
                     color: "#000000",
@@ -242,15 +236,17 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
                         weight: "bold",
                         size: 14
                     },
-                    formatter: (value) => value,
+                    formatter: function(value) {
+                        return value;
+                    },
                     clip: false,
                     clamp: true,
-                    anchor: (ctx) => {
+                    anchor: function(ctx) {
                         if (type === "bar") return "end";
                         if (type === "line") return "end";
                         return "center";
                     },
-                    align: (ctx) => {
+                    align: function(ctx) {
                         if (type === "bar") return "end";
                         if (type === "line") return "top";
                         return "center";
