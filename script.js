@@ -194,10 +194,6 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     const exportCtx = exportCanvas.getContext("2d");
 
-    // White background
-    exportCtx.fillStyle = "#ffffff";
-    exportCtx.fillRect(0, 0, width, height);
-
     const type = original.config.type;
     const labels = original.data.labels;
     const dataset = original.data.datasets[0];
@@ -223,6 +219,18 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
             layout: { padding: 20 },
 
             plugins: {
+                backgroundColor: {
+                    id: 'backgroundColor',
+                    beforeDraw: (chart) => {
+                        const {ctx, width, height} = chart;
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'destination-over';
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.restore();
+                    }
+                },
+
                 legend: {
                     labels: {
                         color: "#000000"
