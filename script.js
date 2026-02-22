@@ -294,10 +294,4 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
         exportChart.destroy();
     }, 100);
-    link.download = "chart.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    exportChart.destroy();
 });
