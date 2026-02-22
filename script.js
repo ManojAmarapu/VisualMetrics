@@ -105,46 +105,43 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
     if (!chartInstance) return;
 
-    // Store original config safely
-    const originalOptions = JSON.parse(JSON.stringify(chartInstance.options));
+    // Store original primitive values only
+    const originalLegendColor = chartInstance.options.plugins.legend.labels.color;
+    const originalDataLabelsDisplay = chartInstance.options.plugins.datalabels.display;
+    const originalDataLabelsColor = chartInstance.options.plugins.datalabels.color;
 
-    // Set white background temporarily
-    chartInstance.options.plugins = {
-        ...chartInstance.options.plugins,
-        legend: {
-            ...chartInstance.options.plugins.legend,
-            labels: { color: "#000000" }
-        },
-        datalabels: {
-            display: true,
-            color: "#000000",
-            font: {
-                weight: "bold",
-                size: 14
-            },
-            formatter: value => value,
-            anchor: context => {
-                const type = context.chart.config.type;
-                if (type === "bar") return "end";
-                if (type === "line") return "end";
-                return "center";
-            },
-            align: context => {
-                const type = context.chart.config.type;
-                if (type === "bar") return "end";
-                if (type === "line") return "top";
-                return "center";
-            },
-            clamp: true
-        }
-    };
+    let originalTickColors = {};
 
-    // Force axis text black for export
+    if (chartInstance.options.scales) {
+        Object.keys(chartInstance.options.scales).forEach(key => {
+            const scale = chartInstance.options.scales[key];
+            if (scale.ticks) {
+                originalTickColors[key] = scale.ticks.color;
+            }
+        });
+    }
+
+    // --------- APPLY EXPORT STYLING ---------
+
+    // Legend black
+    chartInstance.options.plugins.legend.labels.color = "#000000";
+
+    // Axis ticks black
     if (chartInstance.options.scales) {
         Object.values(chartInstance.options.scales).forEach(scale => {
             if (scale.ticks) scale.ticks.color = "#000000";
         });
     }
+
+    // Enable datalabels safely (do NOT replace object)
+    chartInstance.options.plugins.datalabels.display = true;
+    chartInstance.options.plugins.datalabels.color = "#000000";
+    chartInstance.options.plugins.datalabels.font = {
+        weight: "bold",
+        size: 14
+    };
+    chartInstance.options.plugins.datalabels.formatter = value => value;
+    chartInstance.options.plugins.datalabels.clamp = true;
 
     chartInstance.update();
 
@@ -157,11 +154,9 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
 
         const ctx = exportCanvas.getContext("2d");
 
-        // White background
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-        // Draw chart on top
         ctx.drawImage(chartInstance.canvas, 0, 0);
 
         const link = document.createElement("a");
@@ -169,8 +164,22 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         link.href = exportCanvas.toDataURL("image/png", 1);
         link.click();
 
-        // Restore original options completely
-        chartInstance.options = originalOptions;
+        // --------- RESTORE ORIGINAL VALUES ---------
+
+        chartInstance.options.plugins.legend.labels.color = originalLegendColor;
+
+        chartInstance.options.plugins.datalabels.display = originalDataLabelsDisplay;
+        chartInstance.options.plugins.datalabels.color = originalDataLabelsColor;
+
+        if (chartInstance.options.scales) {
+            Object.keys(chartInstance.options.scales).forEach(key => {
+                const scale = chartInstance.options.scales[key];
+                if (scale.ticks && originalTickColors[key] !== undefined) {
+                    scale.ticks.color = originalTickColors[key];
+                }
+            });
+        }
+
         chartInstance.update();
 
     }, 200);
