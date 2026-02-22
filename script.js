@@ -184,9 +184,9 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
         return;
     }
 
-    const originalCanvas = chartInstance.canvas;
-    const width = originalCanvas.width;
-    const height = originalCanvas.height;
+    const original = chartInstance;
+    const width = original.canvas.width;
+    const height = original.canvas.height;
 
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = width;
@@ -198,56 +198,82 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
     exportCtx.fillStyle = "#ffffff";
     exportCtx.fillRect(0, 0, width, height);
 
-    const exportConfig = structuredClone(chartInstance.config);
+    /* ------------------------------------
+       BUILD NEW CONFIG (NO CLONING)
+    -------------------------------------*/
 
-    /* LOCK SETTINGS */
-    exportConfig.options.responsive = false;
-    exportConfig.options.maintainAspectRatio = false;
-    exportConfig.options.animation = false;
-    exportConfig.options.devicePixelRatio = 1;
-    exportConfig.options.layout = { padding: 20 };
+    const type = original.config.type;
+    const labels = original.data.labels;
+    const dataset = original.data.datasets[0];
 
-    /* BLACK TEXT */
-    exportConfig.options.plugins.legend.labels.color = "#000000";
-
-    if (exportConfig.options.scales) {
-        Object.values(exportConfig.options.scales).forEach(scale => {
-            if (scale.ticks) scale.ticks.color = "#000000";
-            if (scale.grid) scale.grid.color = "rgba(0,0,0,0.1)";
-        });
-    }
-
-    /* DATALABELS ONLY FOR EXPORT */
-    exportConfig.options.plugins.datalabels = {
-        display: true,
-        color: "#000000",
-        font: {
-            weight: "bold",
-            size: 14
+    const exportConfig = {
+        type: type,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: dataset.label,
+                data: dataset.data,
+                backgroundColor: dataset.backgroundColor,
+                borderColor: dataset.borderColor,
+                borderWidth: dataset.borderWidth,
+                fill: dataset.fill
+            }]
         },
-        formatter: (value) => value,
-        clip: false,
-        clamp: true,
-        anchor: function(ctx) {
-            const type = ctx.chart.config.type;
-            if (type === "bar") return "end";
-            if (type === "line") return "end";
-            return "center";
-        },
-        align: function(ctx) {
-            const type = ctx.chart.config.type;
-            if (type === "bar") return "end";
-            if (type === "line") return "top";
-            return "center";
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            animation: false,
+            devicePixelRatio: 1,
+            layout: { padding: 20 },
+
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#000000"
+                    }
+                },
+                tooltip: { enabled: false },
+
+                // ENABLE values for export
+                datalabels: {
+                    display: true,
+                    color: "#000000",
+                    font: {
+                        weight: "bold",
+                        size: 14
+                    },
+                    formatter: (value) => value,
+                    clip: false,
+                    clamp: true,
+                    anchor: (ctx) => {
+                        if (type === "bar") return "end";
+                        if (type === "line") return "end";
+                        return "center";
+                    },
+                    align: (ctx) => {
+                        if (type === "bar") return "end";
+                        if (type === "line") return "top";
+                        return "center";
+                    }
+                }
+            },
+
+            scales: (type === "bar" || type === "line") ? {
+                x: {
+                    ticks: { color: "#000000" },
+                    grid: { color: "rgba(0,0,0,0.1)" }
+                },
+                y: {
+                    ticks: { color: "#000000" },
+                    grid: { color: "rgba(0,0,0,0.1)" }
+                }
+            } : {}
         }
     };
 
     const exportChart = new Chart(exportCtx, exportConfig);
-
-    // Force immediate render
     exportChart.update();
 
-    // Download safely
     const link = document.createElement("a");
     link.href = exportCanvas.toDataURL("image/png");
     link.download = "chart.png";
