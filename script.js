@@ -278,8 +278,22 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
     const exportChart = new Chart(exportCtx, exportConfig);
     exportChart.update();
 
-    const link = document.createElement("a");
-    link.href = exportCanvas.toDataURL("image/png");
+    // Wait for chart to finish rendering
+    setTimeout(() => {
+        // Draw white background BEHIND chart
+        exportCtx.globalCompositeOperation = 'destination-over';
+        exportCtx.fillStyle = '#ffffff';
+        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        const link = document.createElement("a");
+        link.href = exportCanvas.toDataURL("image/png");
+        link.download = "chart.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        exportChart.destroy();
+    }, 100);
     link.download = "chart.png";
     document.body.appendChild(link);
     link.click();
